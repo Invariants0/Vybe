@@ -1,99 +1,141 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowUpRight, Link as LinkIcon, MousePointerClick, TrendingUp } from "lucide-react";
-import Link from "next/link";
+"use client";
+import { Navbar } from '@/components/layout/Navbar';
+import { Button } from '@/components/ui/Button';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { Link as LinkIcon, Copy, MoreVertical, ArrowUpRight, Globe, MousePointerClick } from 'lucide-react';
 
-export default function DashboardOverview() {
+const trafficData = [
+  { name: 'Mon', clicks: 4000 },
+  { name: 'Tue', clicks: 3000 },
+  { name: 'Wed', clicks: 5000 },
+  { name: 'Thu', clicks: 2780 },
+  { name: 'Fri', clicks: 8900 },
+  { name: 'Sat', clicks: 2390 },
+  { name: 'Sun', clicks: 3490 },
+];
+
+const geoData = [
+  { name: 'US', value: 400 },
+  { name: 'UK', value: 300 },
+  { name: 'DE', value: 300 },
+  { name: 'IN', value: 200 },
+];
+
+export default function Dashboard() {
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between">
-        <div>
-            <h2 className="text-3xl font-bold tracking-tight">Overview</h2>
-            <p className="text-neutral-400 mt-1">Welcome back. Here's what's happening with your links.</p>
+    <main className="min-h-screen flex flex-col bg-vybe-light">
+      <Navbar />
+      <div className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <h1 className="text-4xl font-heading font-extrabold">Dashboard</h1>
+          <div className="flex w-full md:w-auto gap-2">
+            <div className="flex-1 md:w-64 flex items-center px-4 bg-vybe-light border-2 border-vybe-black shadow-[4px_4px_0px_0px_#333333]">
+              <LinkIcon className="w-4 h-4 text-vybe-black/50 mr-2" />
+              <input type="url" placeholder="Shorten a new link..." className="w-full bg-transparent py-2 outline-none font-medium" />
+            </div>
+            <Button variant="primary">Create</Button>
+          </div>
         </div>
-        <Link href="/dashboard/links">
-            <Button className="rounded-full">Create Link</Button>
-        </Link>
-      </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-neutral-950 border-neutral-900">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-400">Total Clicks</CardTitle>
-            <MousePointerClick className="h-4 w-4 text-neutral-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">12,482</div>
-            <p className="text-xs text-green-400 mt-1 flex items-center">
-              <TrendingUp className="w-3 h-3 mr-1" /> +14% from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="bg-neutral-950 border-neutral-900">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-400">Active Links</CardTitle>
-            <LinkIcon className="h-4 w-4 text-neutral-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">42</div>
-            <p className="text-xs text-neutral-500 mt-1">
-              3 created this week
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="bg-neutral-950 border-neutral-900">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-400">Avg. CTR</CardTitle>
-            <BarChart3 className="h-4 w-4 text-neutral-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">4.2%</div>
-            <p className="text-xs text-green-400 mt-1 flex items-center">
-              <TrendingUp className="w-3 h-3 mr-1" /> +0.8% from last month
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { label: "Total Clicks", value: "124,592", icon: MousePointerClick, trend: "+12.5%" },
+            { label: "Unique Visitors", value: "84,201", icon: Globe, trend: "+5.2%" },
+            { label: "Avg. CTR", value: "24.8%", icon: ArrowUpRight, trend: "+2.1%" }
+          ].map((stat, i) => (
+            <div key={i} className="bg-vybe-light border-2 border-vybe-black p-6 shadow-[8px_8px_0px_0px_#333333]">
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-2 bg-vybe-primary border-2 border-vybe-black shadow-[2px_2px_0px_0px_#333333]">
+                  <stat.icon className="w-5 h-5" />
+                </div>
+                <span className="font-bold text-sm bg-vybe-accent px-2 py-1 border-2 border-vybe-black">{stat.trend}</span>
+              </div>
+              <div className="text-vybe-black/70 font-bold mb-1">{stat.label}</div>
+              <div className="text-4xl font-extrabold">{stat.value}</div>
+            </div>
+          ))}
+        </div>
 
-      <div>
-        <h3 className="text-xl font-semibold mb-4">Recent Links</h3>
-        <div className="rounded-xl border border-neutral-900 bg-neutral-950 overflow-hidden">
-            <table className="w-full text-sm text-left">
-                <thead className="text-xs text-neutral-500 bg-neutral-900/50 border-b border-neutral-900">
-                    <tr>
-                        <th className="px-6 py-3 font-medium">Short Link</th>
-                        <th className="px-6 py-3 font-medium">Original URL</th>
-                        <th className="px-6 py-3 font-medium">Clicks</th>
-                        <th className="px-6 py-3 font-medium">Created</th>
-                        <th className="px-6 py-3 font-medium text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-900">
-                    {[
-                        { short: 'vybe.link/launch', orig: 'https://example.com/product/launch-2026', clicks: 4231, date: '2d ago' },
-                        { short: 'vybe.link/docs', orig: 'https://docs.example.com/v2/getting-started', clicks: 892, date: '5d ago' },
-                        { short: 'vybe.link/twitter-promo', orig: 'https://example.com/promo?ref=twitter', clicks: 124, date: '1w ago' },
-                    ].map((link, i) => (
-                        <tr key={i} className="hover:bg-neutral-900/30 transition-colors">
-                            <td className="px-6 py-4 font-mono text-cyan-400">{link.short}</td>
-                            <td className="px-6 py-4 text-neutral-400 truncate max-w-[200px]">{link.orig}</td>
-                            <td className="px-6 py-4">{link.clicks.toLocaleString()}</td>
-                            <td className="px-6 py-4 text-neutral-500">{link.date}</td>
-                            <td className="px-6 py-4 text-right">
-                                <Button variant="ghost" size="sm" className="h-8 text-neutral-400 hover:text-white">
-                                    Details <ArrowUpRight className="w-3 h-3 ml-1" />
-                                </Button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 bg-vybe-light border-2 border-vybe-black p-6 shadow-[8px_8px_0px_0px_#333333]">
+            <h3 className="text-xl font-heading font-bold mb-6">Traffic Overview</h3>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={trafficData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#d4d4d4" />
+                  <XAxis dataKey="name" stroke="#333333" tick={{fontFamily: 'var(--font-inter)', fontWeight: 'bold'}} />
+                  <YAxis stroke="#333333" tick={{fontFamily: 'var(--font-inter)', fontWeight: 'bold'}} />
+                  <Tooltip contentStyle={{backgroundColor: '#f7f9fa', border: '2px solid #333333', boxShadow: '4px 4px 0px 0px #333333', fontWeight: 'bold'}} />
+                  <Line type="step" dataKey="clicks" stroke="#333333" strokeWidth={4} dot={{r: 6, fill: '#87ceeb', stroke: '#333333', strokeWidth: 2}} activeDot={{r: 8}} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="bg-vybe-light border-2 border-vybe-black p-6 shadow-[8px_8px_0px_0px_#333333]">
+            <h3 className="text-xl font-heading font-bold mb-6">Top Locations</h3>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={geoData} layout="vertical" margin={{top: 0, right: 0, left: 0, bottom: 0}}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#d4d4d4" horizontal={false} />
+                  <XAxis type="number" hide />
+                  <YAxis dataKey="name" type="category" stroke="#333333" tick={{fontFamily: 'var(--font-inter)', fontWeight: 'bold'}} width={40} />
+                  <Tooltip contentStyle={{backgroundColor: '#f7f9fa', border: '2px solid #333333', boxShadow: '4px 4px 0px 0px #333333', fontWeight: 'bold'}} />
+                  <Bar dataKey="value" fill="#ffc0cb" stroke="#333333" strokeWidth={2} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* Links Table */}
+        <div className="bg-vybe-light border-2 border-vybe-black shadow-[8px_8px_0px_0px_#333333] overflow-hidden">
+          <div className="p-6 border-b-2 border-vybe-black flex justify-between items-center bg-vybe-gray">
+            <h3 className="text-xl font-heading font-bold">Recent Links</h3>
+            <Button variant="ghost" size="sm">View All</Button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b-2 border-vybe-black bg-vybe-light">
+                  <th className="p-4 font-bold">Short Link</th>
+                  <th className="p-4 font-bold">Original URL</th>
+                  <th className="p-4 font-bold">Clicks</th>
+                  <th className="p-4 font-bold">Status</th>
+                  <th className="p-4 font-bold"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { short: 'vybe.link/launch', orig: 'https://example.com/campaign-2026', clicks: '45.2k', status: 'Active' },
+                  { short: 'vybe.link/docs', orig: 'https://docs.example.com/v2', clicks: '12.8k', status: 'Active' },
+                  { short: 'vybe.link/promo', orig: 'https://example.com/special-offer', clicks: '8.4k', status: 'Expired' },
+                ].map((link, i) => (
+                  <tr key={i} className="border-b-2 border-vybe-black hover:bg-vybe-gray transition-colors">
+                    <td className="p-4 font-bold text-vybe-primary flex items-center gap-2">
+                      {link.short} <Copy className="w-4 h-4 cursor-pointer text-vybe-black hover:text-vybe-primary" />
+                    </td>
+                    <td className="p-4 text-vybe-black/70 truncate max-w-xs">{link.orig}</td>
+                    <td className="p-4 font-bold">{link.clicks}</td>
+                    <td className="p-4">
+                      <span className={`px-2 py-1 text-xs font-bold border-2 border-vybe-black ${link.status === 'Active' ? 'bg-vybe-accent' : 'bg-vybe-darkgray'}`}>
+                        {link.status}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <button className="p-2 hover:bg-vybe-darkgray border-2 border-transparent hover:border-vybe-black transition-all">
+                        <MoreVertical className="w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
+          </div>
         </div>
-      </div>
-    </div>
-  );
-}
 
-function BarChart3(props: any) {
-    return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+      </div>
+    </main>
+  );
 }
