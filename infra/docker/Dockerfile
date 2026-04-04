@@ -7,16 +7,17 @@ ENV PIP_NO_CACHE_DIR=1
 WORKDIR /app
 
 RUN apt-get update \
-	&& apt-get install -y --no-install-recommends build-essential libpq-dev \
+	&& apt-get install -y --no-install-recommends build-essential libpq-dev curl netcat-openbsd \
 	&& rm -rf /var/lib/apt/lists/*
 
+COPY pyproject.toml ./
 COPY backend ./backend
 COPY README.md ./README.md
 COPY run.py ./run.py
 COPY scripts ./scripts
 
-RUN pip install --upgrade pip && pip install ./backend
+RUN pip install --upgrade pip && pip install .
 
 EXPOSE 5000
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--threads", "4", "run:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--threads", "4", "--timeout", "120", "run:app"]
