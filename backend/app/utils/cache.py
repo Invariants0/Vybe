@@ -1,14 +1,17 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+import logging
 import os
+from typing import Any, Optional
 
 try:
     import redis
 except Exception:  # pragma: no cover - redis is optional at runtime
-    redis = None
+    redis = None  # type: ignore[assignment]
 
-_client: Optional["redis.Redis"] = None
+_client: Optional["redis.Redis"] = None  # type: ignore[type-arg]
+
+logger = logging.getLogger(__name__)
 
 
 def _is_enabled(config: Optional[dict[str, Any]] = None) -> bool:
@@ -29,7 +32,7 @@ def _get_url(config: Optional[dict[str, Any]] = None) -> str:
     return os.getenv("REDIS_URL", "")
 
 
-def get_client(config: Optional[dict[str, Any]] = None) -> Optional["redis.Redis"]:
+def get_client(config: Optional[dict[str, Any]] = None) -> Optional["redis.Redis"]:  # type: ignore[type-arg]
     global _client
     if _client is not None:
         return _client
@@ -44,13 +47,17 @@ def get_client(config: Optional[dict[str, Any]] = None) -> Optional["redis.Redis
         _client = redis.Redis.from_url(
             url,
             decode_responses=True,
-            socket_timeout=0.2,
-            socket_connect_timeout=0.2,
+            socket_timeout=0.5,
+            socket_connect_timeout=0.5,
         )
+        # Eagerly PING to catch misconfiguration at startup rather than silently
+        # swallowing it on the first real request.
+        _client.ping()
+        logger.info("Redis connection established: %s", url.split("@")[-1])
         return _client
     except Exception as e:
-        import logging
-        logging.getLogger(__name__).error(f"Redis connection failed: {e}", exc_info=True)
+        logger.error("Redis connection failed: %s", e, exc_info=True)
+        _client = None  # Don't cache a broken client
         return None
 
 
@@ -61,8 +68,7 @@ def cache_get(key: str, config: Optional[dict[str, Any]] = None) -> Optional[str
     try:
         return client.get(key)
     except Exception as e:
-        import logging
-        logging.getLogger(__name__).error(f"Redis GET failed for key {key}: {e}")
+        logger.error("Redis GET failed for key=%s: %s", key, e)
         return None
 
 
@@ -74,8 +80,7 @@ def cache_set(key: str, value: str, ttl_seconds: int, config: Optional[dict[str,
         client.setex(key, ttl_seconds, value)
         return True
     except Exception as e:
-        import logging
-        logging.getLogger(__name__).error(f"Redis SET failed for key {key}: {e}")
+        logger.error("Redis SET failed for key=%s: %s", key, e)
         return False
 
 
@@ -87,6 +92,5 @@ def cache_delete(key: str, config: Optional[dict[str, Any]] = None) -> bool:
         client.delete(key)
         return True
     except Exception as e:
-        import logging
-        logging.getLogger(__name__).error(f"Redis DELETE failed for key {key}: {e}")
+        logger.error("Redis DELETE failed for key=%s: %s", key, e)
         return False
