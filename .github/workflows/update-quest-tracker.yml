@@ -1,0 +1,51 @@
+name: Auto-Update Quest Tracker from Issues
+
+on:
+  issues:
+    types: [opened, closed, reopened, edited]
+  schedule:
+    # Run every hour to sync issue status
+    - cron: '0 * * * *'
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  sync-quests:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Sync from GitHub Issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 sync_quests_from_issues.py
+      
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet QUEST_TRACKER.md; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit and push updates
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add QUEST_TRACKER.md
+          git commit -m "🤖 [Auto] Sync quest progress from GitHub Issues"
+          git push
+      
+      - name: Print summary
+        run: |
+          echo "✅ Quest tracker synced from GitHub Issues!"
+
