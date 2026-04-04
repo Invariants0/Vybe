@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List, Optional
 
 from peewee import IntegrityError
@@ -6,7 +7,7 @@ from backend.app.models import Event, ShortURL, User
 import random
 
 from backend.app.utils.codecs import generate_short_code
-from backend.app.utils.cache import cache_get, cache_set
+from backend.app.utils.cache import cache_get, cache_set, cache_delete
 from backend.app.utils.urls import normalize_url
 
 
@@ -47,7 +48,7 @@ class UrlService:
 
         # Log 'created' event
         self.event_repo.log_event(short_url, "created", user=user)
-        self._cache_short_url(short_url.short_code, short_url.original_url)
+        self._cache_short_url(short_url.short_code, short_url)
 
         return short_url
 
@@ -80,16 +81,38 @@ class UrlService:
         if not updates:
             return self.get_url(url_id)
 
-        return self.repo.update(url_id, **updates)
+        obj = self.repo.update(url_id, **updates)
+        if obj:
+            cache_key = f"shorturl:{obj.short_code}"
+            cache_delete(cache_key, self.config)
+        return obj
 
     def resolve_redirect(self, short_code: str) -> Optional[str]:
         """
         Find destination URL and log 'accessed' event.
         Returns original_url if found and active, else None.
         """
-        cached_url = self._get_cached_url(short_code)
-        if cached_url:
-            return cached_url
+        cached_data = self._get_cached_url(short_code)
+        
+        if cached_data:
+            try:
+                data = json.loads(cached_data)
+                
+                # Construct mock URL object to satisfy event logger without DB query
+                class MockURL:
+                    id = data["id"]
+                    short_code = short_code
+                    original_url = data["original_url"]
+                    user_id = type('obj', (object,), {'id': data["user_id"]}) if data.get("user_id") else None
+
+                mock_url = MockURL()
+                
+                # Log 'accessed' event
+                self._maybe_log_event(mock_url)  # type: ignore
+
+                return data["original_url"]
+            except Exception:
+                pass # Cache parsing failed, fallback to DB
 
         short_url = self.get_url_by_code(short_code)
         if not short_url or not short_url.is_active:
@@ -98,7 +121,7 @@ class UrlService:
         # Log 'accessed' event
         self._maybe_log_event(short_url)
 
-        self._cache_short_url(short_url.short_code, short_url.original_url)
+        self._cache_short_url(short_url.short_code, short_url)
 
         return short_url.original_url
 
@@ -114,10 +137,24 @@ class UrlService:
         cache_key = f"shorturl:{short_code}"
         return cache_get(cache_key, self.config)
 
-    def _cache_short_url(self, short_code: str, original_url: str) -> None:
+    def _cache_short_url(self, short_code: str, url_obj: ShortURL) -> None:
         ttl = int(self.config.get("REDIS_DEFAULT_TTL_SECONDS", 300))
         cache_key = f"shorturl:{short_code}"
-        cache_set(cache_key, original_url, ttl, self.config)
+        
+        # Try to safely extract user_id to prevent lazy Peewee loading
+        uid = getattr(url_obj, 'user_id_id', None)
+        if uid is None and url_obj.user_id:
+            try:
+                uid = url_obj.user_id.id
+            except Exception:
+                pass
+                
+        cache_data = json.dumps({
+            "id": url_obj.id,
+            "original_url": url_obj.original_url,
+            "user_id": uid
+        })
+        cache_set(cache_key, cache_data, ttl, self.config)
 
     def _maybe_log_event(self, short_url: Optional[ShortURL]) -> None:
         if not short_url:

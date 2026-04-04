@@ -12,6 +12,7 @@ build/
 
 # Environment variables
 .env
+.tracks/
 logs/*.log
 
 # uv

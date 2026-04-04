@@ -48,7 +48,9 @@ def get_client(config: Optional[dict[str, Any]] = None) -> Optional["redis.Redis
             socket_connect_timeout=0.2,
         )
         return _client
-    except Exception:
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Redis connection failed: {e}", exc_info=True)
         return None
 
 
@@ -58,7 +60,9 @@ def cache_get(key: str, config: Optional[dict[str, Any]] = None) -> Optional[str
         return None
     try:
         return client.get(key)
-    except Exception:
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Redis GET failed for key {key}: {e}")
         return None
 
 
@@ -69,5 +73,20 @@ def cache_set(key: str, value: str, ttl_seconds: int, config: Optional[dict[str,
     try:
         client.setex(key, ttl_seconds, value)
         return True
-    except Exception:
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Redis SET failed for key {key}: {e}")
+        return False
+
+
+def cache_delete(key: str, config: Optional[dict[str, Any]] = None) -> bool:
+    client = get_client(config)
+    if not client:
+        return False
+    try:
+        client.delete(key)
+        return True
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Redis DELETE failed for key {key}: {e}")
         return False
