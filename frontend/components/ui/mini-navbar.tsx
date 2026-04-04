@@ -52,7 +52,6 @@ export function MiniNavbar() {
   const navLinksData = [
     { label: 'Product', href: '#product' },
     { label: 'Features', href: '#features' },
-    { label: 'Pricing', href: '#pricing' },
     { label: 'Dashboard', href: '/dashboard' },
   ];
 
