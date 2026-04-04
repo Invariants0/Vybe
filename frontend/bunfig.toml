@@ -1,0 +1,12 @@
+# Bun configuration file
+[install]
+# use the bun runtime for all scripts
+scripts = true
+
+[test]
+# run tests with the bun runtime
+runtime = "bun"
+
+[run]
+# use the bun runtime for all bun run commands
+runtime = "bun"
