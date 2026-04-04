@@ -1,10 +1,29 @@
+# Vybe Project Manifest
 [project]
-name = "vybe-workspace"
+name = "mlh-pe-hackathon"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
-    "mlh-pe-hackathon",
+    "email-validator>=2.0.0",
+    "faker>=33.0",
+    "flask>=3.1",
+    "gunicorn>=25.3.0",
+    "peewee>=3.17.0,<4.0",
+    "psycopg2-binary>=2.9.11",
+    "pydantic>=2.12.5",
+    "python-dotenv>=1.2.2",
+    "sentry-sdk[flask]>=2.57.0",
+    "email-validator>=2.0.0",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.1.0",
+    "testcontainers[postgres]>=4.14.2",
 ]
 
-[tool.uv.sources]
-mlh-pe-hackathon = { path = "backend", editable = true }
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["backend*"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=backend/app --cov-report=term-missing"
+testpaths = ["tests"]
+pythonpath = ["."]
