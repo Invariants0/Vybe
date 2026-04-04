@@ -1,13 +1,20 @@
+import json
 from pydantic import ValidationError
 from werkzeug.exceptions import BadRequest
 
 from backend.app.controllers.base_controller import BaseController
 from backend.app.validators.schemas import CreateUserSchema, UpdateUserSchema
+from backend.app.utils.cache import cache_get, cache_set, cache_delete
 
 
 class UserController(BaseController):
     def __init__(self, user_service):
         self.user_service = user_service
+        self.config = None  # Will be set if passed in
+    
+    def set_config(self, config):
+        """Set config for cache operations."""
+        self.config = config
 
     def create_user(self, request):
         try:
@@ -20,6 +27,10 @@ class UserController(BaseController):
                 username=schema.username,
                 email=schema.email
             )
+            
+            # Invalidate list cache on create
+            cache_delete(f"users:list:*", self.config)
+            
             return self.handle_success({
                 "id": user.id,
                 "username": user.username,
@@ -37,13 +48,22 @@ class UserController(BaseController):
             page = request.args.get("page", 1, type=int)
             per_page = request.args.get("per_page", 50, type=int)
             
+            # Create cache key based on pagination
+            cache_key = f"users:list:{page}:{per_page}"
+            
+            # Try to get from cache
+            cached = cache_get(cache_key, self.config)
+            if cached:
+                return self.handle_success(json.loads(cached))
+            
+            # Cache miss - fetch from DB
             # Use get_all_users for testing purposes when no pagination params
             if page == 1 and per_page == 50 and not request.args:
                 users = self.user_service.get_all_users()
             else:
                 users = self.user_service.list_users(page=page, per_page=per_page)
-                
-            return self.handle_success([
+            
+            result = [
                 {
                     "id": u.id,
                     "username": u.username,
@@ -51,21 +71,40 @@ class UserController(BaseController):
                     "created_at": u.created_at.isoformat(),
                 }
                 for u in users
-            ])
+            ]
+            
+            # Store in cache for 5 minutes
+            cache_set(cache_key, json.dumps(result), 300, self.config)
+            
+            return self.handle_success(result)
         except Exception as e:
             return self.handle_error(e, "list_users")
 
     def get_user(self, user_id: int):
         try:
+            cache_key = f"user:{user_id}"
+            
+            # Try to get from cache
+            cached = cache_get(cache_key, self.config)
+            if cached:
+                return self.handle_success(json.loads(cached))
+            
+            # Cache miss - fetch from DB
             user = self.user_service.get_user(user_id)
             if not user:
                 raise ValueError("User not found")
-            return self.handle_success({
+            
+            result = {
                 "id": user.id,
                 "username": user.username,
                 "email": user.email,
                 "created_at": user.created_at.isoformat(),
-            })
+            }
+            
+            # Store in cache for 5 minutes
+            cache_set(cache_key, json.dumps(result), 300, self.config)
+            
+            return self.handle_success(result)
         except Exception as e:
             return self.handle_error(e, "get_user")
 
@@ -78,6 +117,10 @@ class UserController(BaseController):
             user = self.user_service.update_user(user_id, updates)
             if not user:
                 raise ValueError("User not found")
+            
+            # Invalidate specific user cache and list caches
+            cache_delete(f"user:{user_id}", self.config)
+            cache_delete(f"users:list:*", self.config)
                 
             return self.handle_success({
                 "id": user.id,
