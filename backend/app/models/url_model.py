@@ -11,7 +11,7 @@ from peewee import (
 )
 
 from backend.app.database import BaseModel
-from backend.app.models.user import User
+from backend.app.models.user_model import User
 
 
 def utcnow():
