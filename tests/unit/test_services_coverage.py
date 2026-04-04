@@ -167,7 +167,7 @@ class TestEventServiceCoverage:
         result = EventService.serialize_event(mock_event)
         
         assert result["id"] == 1
-        assert result["url_id"] == 1
+        assert result["short_url_id"] == 1
         assert result["user_id"] == 2
         assert result["event_type"] == "created"
     
