@@ -1,93 +1,103 @@
 "use client"
 
-import { Dithering } from "@paper-design/shaders-react"
-import { useState } from "react"
-import { Shield, Activity, Zap, Lock } from "lucide-react"
+import { Shield, Activity, Zap, Lock, ArrowUpRight } from "lucide-react"
+import Link from "next/link"
+import { Button } from "./button"
 
 export default function SREDashboardSection() {
-  const [isDarkMode] = useState(true)
-
   return (
-    <div className="relative min-h-[800px] overflow-hidden flex flex-col md:flex-row border-y border-white/10 bg-black">
+    <div className="relative min-h-[600px] overflow-hidden flex flex-col md:flex-row border-y border-border/20 bg-background">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,192,203,0.05),transparent_70%)]" />
+      
       <div
-        className={`w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center relative z-10 bg-black text-white`}
+        className={`w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center relative z-10 bg-white/40 backdrop-blur-md text-foreground`}
       >
         {/* Header */}
         <div className="mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-mono mb-6">
-            <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 border border-secondary/20 text-secondary-foreground text-xs font-bold mb-6">
+            <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
             SRE INFRASTRUCTURE
           </div>
           <h2 className="text-5xl md:text-7xl font-bold tracking-tighter mb-8 leading-none">
-            Built to <span className="text-cyan-400">survive</span> production.
+            Built to <span className="text-secondary">survive</span> production.
           </h2>
-          <p className="text-xl text-neutral-400 max-w-md font-medium leading-relaxed">
+          <p className="text-xl text-muted-foreground max-w-md font-medium leading-relaxed">
             Vybe isn't just functional — it's tested under extreme stress conditions to ensure 99.99% reliability.
           </p>
         </div>
 
         {/* Experience Section as System Stats */}
-        <div className="space-y-6 font-mono text-sm">
-          <div className="flex items-center group transition-colors hover:text-cyan-400">
-            <Shield className="w-5 h-5 mr-4 text-cyan-500" />
-            <span className="w-32 text-neutral-500">Security</span>
-            <span className="mx-2">Domain Isolation</span>
-            <span className="ml-auto text-neutral-500 text-xs">ACTIVE</span>
-          </div>
-          <div className="flex items-center group transition-colors hover:text-cyan-400">
-            <Activity className="w-5 h-5 mr-4 text-cyan-500" />
-            <span className="w-32 text-neutral-500">Load</span>
-            <span className="mx-2">500+ Req/sec</span>
-            <span className="ml-auto text-neutral-500 text-xs">STABLE</span>
-          </div>
-          <div className="flex items-center group transition-colors hover:text-cyan-400">
-            <Zap className="w-5 h-5 mr-4 text-cyan-500" />
-            <span className="w-32 text-neutral-500">Latency</span>
-            <span className="mx-2">P99 @ 42ms</span>
-            <span className="ml-auto text-neutral-500 text-xs">OPTIMAL</span>
-          </div>
-          <div className="flex items-center group transition-colors hover:text-cyan-400">
-            <Lock className="w-5 h-5 mr-4 text-cyan-500" />
-            <span className="w-32 text-neutral-500">Auth</span>
-            <span className="mx-2">Zero Trust</span>
-            <span className="ml-auto text-neutral-500 text-xs">ENFORCED</span>
-          </div>
+        <div className="space-y-6 font-bold text-sm">
+          <StatItem icon={<Shield className="w-5 h-5 mr-4 text-secondary" />} label="Security" value="Domain Isolation" status="ACTIVE" />
+          <StatItem icon={<Activity className="w-5 h-5 mr-4 text-secondary" />} label="Load" value="500+ Req/sec" status="STABLE" />
+          <StatItem icon={<Zap className="w-5 h-5 mr-4 text-secondary" />} label="Latency" value="P99 @ 42ms" status="OPTIMAL" />
+          <StatItem icon={<Lock className="w-5 h-5 mr-4 text-secondary" />} label="Auth" value="Zero Trust" status="ENFORCED" />
         </div>
 
-        {/* Footer Links Section */}
-        <div className="mt-16 pt-8 border-t border-white/5">
-          <div className="flex space-x-8 text-xs font-mono text-neutral-500 uppercase tracking-widest">
-            <span className="hover:text-cyan-400 cursor-pointer transition-colors">Documentation</span>
-            <span className="hover:text-cyan-400 cursor-pointer transition-colors">Status Page</span>
-            <span className="hover:text-cyan-400 cursor-pointer transition-colors">SLA</span>
-          </div>
+        <div className="mt-12">
+            <Link href="/admin">
+                <Button variant="outline" size="lg" className="rounded-2xl border-border/40 bg-white/60 hover:bg-white/80 text-foreground font-bold flex items-center gap-2">
+                    Enter Dashboard
+                    <ArrowUpRight className="w-4 h-4" />
+                </Button>
+            </Link>
         </div>
       </div>
 
-      <div className="w-full md:w-1/2 relative min-h-[400px] md:min-h-full bg-neutral-900/20">
-        <Dithering
-          style={{ height: "100%", width: "100%" }}
-          colorBack={isDarkMode ? "hsl(0, 0%, 0%)" : "hsl(0, 0%, 95%)"}
-          colorFront={isDarkMode ? "hsl(180, 100%, 50%)" : "hsl(220, 100%, 70%)"}
-          shape="cat"
-          type="4x4"
-          pxSize={4}
-          offsetX={0}
-          offsetY={0}
-          scale={0.9}
-          rotation={0}
-          speed={0.15}
-        />
-        {/* Abstract stats overlay */}
-        <div className="absolute bottom-12 right-12 bg-black/80 backdrop-blur-xl border border-white/10 p-6 rounded-2xl font-mono text-[10px] text-cyan-400/80 space-y-2 max-w-[200px]">
-            <div className="flex justify-between"><span>CPU_USAGE</span><span>24.2%</span></div>
-            <div className="flex justify-between"><span>MEM_BUFFER</span><span>128MB</span></div>
-            <div className="flex justify-between"><span>NET_TRAFFIC</span><span>1.2GB/s</span></div>
-            <div className="w-full h-1 bg-white/5 mt-4 rounded-full overflow-hidden">
-                <div className="h-full bg-cyan-500 w-2/3 animate-pulse" />
+      <div className="w-full md:w-1/2 relative min-h-[400px] md:min-h-full flex items-center justify-center p-12">
+        {/* Abstract Visualization using glassmorphic cards */}
+        <div className="relative w-full max-w-md aspect-square">
+            <div className="absolute top-0 left-0 w-64 h-64 bg-primary/20 rounded-3xl backdrop-blur-3xl animate-pulse" />
+            <div className="absolute bottom-0 right-0 w-64 h-64 bg-secondary/20 rounded-3xl backdrop-blur-3xl animate-pulse [animation-delay:1s]" />
+            
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-full bg-white/60 backdrop-blur-xl border border-border/40 p-8 rounded-3xl shadow-2xl space-y-6">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">System Health</span>
+                        <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full">HEALTHY</span>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <HealthBar label="CPU" percentage={24} />
+                        <HealthBar label="Memory" percentage={62} />
+                        <HealthBar label="Network" percentage={45} />
+                    </div>
+                    
+                    <div className="pt-4 border-t border-border/20">
+                        <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground">
+                            <span>UPTIME</span>
+                            <span>99.999%</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
       </div>
     </div>
   )
+}
+
+function StatItem({ icon, label, value, status }: { icon: React.ReactNode, label: string, value: string, status: string }) {
+    return (
+        <div className="flex items-center group transition-colors hover:text-secondary">
+            {icon}
+            <span className="w-32 text-muted-foreground">{label}</span>
+            <span className="mx-2 text-foreground">{value}</span>
+            <span className="ml-auto text-muted-foreground text-[10px] tracking-widest">{status}</span>
+        </div>
+    )
+}
+
+function HealthBar({ label, percentage }: { label: string, percentage: number }) {
+    return (
+        <div className="space-y-2">
+            <div className="flex justify-between text-[10px] font-bold">
+                <span>{label}</span>
+                <span>{percentage}%</span>
+            </div>
+            <div className="w-full h-1.5 bg-muted/40 rounded-full overflow-hidden">
+                <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${percentage}%` }} />
+            </div>
+        </div>
+    )
 }

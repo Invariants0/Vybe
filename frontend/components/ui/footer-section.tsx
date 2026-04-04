@@ -2,7 +2,7 @@
 import React from 'react';
 import type { ComponentProps, ReactNode } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { FacebookIcon, FrameIcon, InstagramIcon, LinkedinIcon, YoutubeIcon } from 'lucide-react';
+import { FacebookIcon, InstagramIcon, LinkedinIcon, YoutubeIcon } from 'lucide-react';
 
 interface FooterLink {
 	title: string;
@@ -51,19 +51,19 @@ const footerLinks: FooterSection[] = [
 
 export function Footer() {
 	return (
-		<footer className="relative w-full border-t border-neutral-800 bg-black px-6 py-12 lg:py-16">
-			<div className="absolute top-0 right-1/2 left-1/2 h-px w-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/20 blur" />
+		<footer className="relative w-full border-t border-border/20 bg-white/40 backdrop-blur-md px-6 py-12 lg:py-16">
+			<div className="absolute top-0 right-1/2 left-1/2 h-px w-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 blur" />
 
 			<div className="max-w-6xl mx-auto grid w-full gap-8 xl:grid-cols-3 xl:gap-8">
 				<AnimatedContainer className="space-y-4">
                     <div className="flex items-center gap-2">
-					    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black font-bold">V</div>
-                        <span className="text-xl font-bold text-white tracking-tight">Vybe</span>
+					    <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center text-background font-bold">V</div>
+                        <span className="text-xl font-bold text-foreground tracking-tight">Vybe</span>
                     </div>
-					<p className="text-neutral-400 mt-8 text-sm md:mt-0 max-w-xs">
+					<p className="text-muted-foreground mt-8 text-sm md:mt-0 max-w-xs font-medium">
 						Create, control, and scale your links with intelligence and reliability.
 					</p>
-                    <p className="text-neutral-500 text-sm mt-4">
+                    <p className="text-muted-foreground/60 text-xs mt-4 font-bold">
 						© {new Date().getFullYear()} Vybe. All rights reserved.
 					</p>
 				</AnimatedContainer>
@@ -72,13 +72,13 @@ export function Footer() {
 					{footerLinks.map((section, index) => (
 						<AnimatedContainer key={section.label} delay={0.1 + index * 0.1}>
 							<div className="mb-10 md:mb-0">
-								<h3 className="text-sm font-semibold text-white">{section.label}</h3>
-								<ul className="text-neutral-400 mt-4 space-y-2 text-sm">
+								<h3 className="text-sm font-bold text-foreground">{section.label}</h3>
+								<ul className="text-muted-foreground mt-4 space-y-2 text-sm font-medium">
 									{section.links.map((link) => (
 										<li key={link.title}>
 											<a
 												href={link.href}
-												className="hover:text-white inline-flex items-center transition-all duration-300"
+												className="hover:text-foreground inline-flex items-center transition-all duration-300"
 											>
 												{link.icon && <link.icon className="me-2 size-4" />}
 												{link.title}
@@ -110,10 +110,10 @@ function AnimatedContainer({ className, delay = 0.1, children }: ViewAnimationPr
 
 	return (
 		<motion.div
-			initial={{ filter: 'blur(4px)', translateY: -8, opacity: 0 }}
-			whileInView={{ filter: 'blur(0px)', translateY: 0, opacity: 1 }}
+			initial={{ translateY: 8, opacity: 0 }}
+			whileInView={{ translateY: 0, opacity: 1 }}
 			viewport={{ once: true }}
-			transition={{ delay, duration: 0.8 }}
+			transition={{ delay, duration: 0.5 }}
 			className={className}
 		>
 			{children}
