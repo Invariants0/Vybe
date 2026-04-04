@@ -17,6 +17,6 @@ export async function GET() {
       { date: '2026-03-03', clicks: 5000 },
     ],
   };
-  
+
   return NextResponse.json(mockAnalytics);
 }

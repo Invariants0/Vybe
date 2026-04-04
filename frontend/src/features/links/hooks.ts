@@ -1,10 +1,20 @@
 import { useEffect } from 'react';
-import { useLinksStore } from './store';
 import { linksApi } from './api';
+import { useLinksStore } from './store';
 import type { CreateLink } from './types';
 
 export function useLinks() {
-  const { links, isLoading, error, setLinks, addLink, updateLink, deleteLink, setLoading, setError } = useLinksStore();
+  const {
+    links,
+    isLoading,
+    error,
+    setLinks,
+    addLink,
+    updateLink,
+    deleteLink,
+    setLoading,
+    setError,
+  } = useLinksStore();
 
   useEffect(() => {
     fetchLinks();

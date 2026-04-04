@@ -1,4 +1,4 @@
-import { Zap, Twitter, Github, Linkedin } from 'lucide-react';
+import { Github, Linkedin, Twitter, Zap } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -15,24 +15,80 @@ export function Footer() {
             Built for the internet. Designed for production.
           </p>
         </div>
-        
+
         <div>
           <h4 className="font-heading font-bold text-xl mb-6 text-vybe-primary">Product</h4>
           <ul className="space-y-4 font-medium text-vybe-light/80">
-            <li><a href="#" className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4">Features</a></li>
-            <li><a href="#" className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4">Analytics</a></li>
-            <li><a href="#" className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4">SRE Dashboard</a></li>
-            <li><a href="#" className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4">API Docs</a></li>
+            <li>
+              <a
+                href="#features"
+                className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4"
+              >
+                Features
+              </a>
+            </li>
+            <li>
+              <a
+                href="#analytics"
+                className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4"
+              >
+                Analytics
+              </a>
+            </li>
+            <li>
+              <a
+                href="#sre"
+                className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4"
+              >
+                SRE Dashboard
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard"
+                className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4"
+              >
+                API Docs
+              </a>
+            </li>
           </ul>
         </div>
 
         <div>
           <h4 className="font-heading font-bold text-xl mb-6 text-vybe-primary">Company</h4>
           <ul className="space-y-4 font-medium text-vybe-light/80">
-            <li><a href="#" className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4">About</a></li>
-            <li><a href="#" className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4">Blog</a></li>
-            <li><a href="#" className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4">Careers</a></li>
-            <li><a href="#" className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4">Contact</a></li>
+            <li>
+              <a
+                href="/"
+                className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4"
+              >
+                About
+              </a>
+            </li>
+            <li>
+              <a
+                href="/"
+                className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4"
+              >
+                Blog
+              </a>
+            </li>
+            <li>
+              <a
+                href="/"
+                className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4"
+              >
+                Careers
+              </a>
+            </li>
+            <li>
+              <a
+                href="/"
+                className="hover:text-vybe-light hover:underline decoration-2 underline-offset-4"
+              >
+                Contact
+              </a>
+            </li>
           </ul>
         </div>
       </div>
@@ -42,9 +98,18 @@ export function Footer() {
           © {new Date().getFullYear()} VYBE Inc. All rights reserved.
         </div>
         <div className="flex gap-4">
-          {[Twitter, Github, Linkedin].map((Icon, i) => (
-            <a key={i} href="#" className="w-10 h-10 bg-vybe-darkgray border-2 border-vybe-light/20 flex items-center justify-center hover:bg-vybe-primary hover:border-vybe-black hover:text-vybe-black transition-all shadow-none hover:shadow-[4px_4px_0px_0px_#0a1f0c] hover:-translate-y-1">
-              <Icon className="w-5 h-5" />
+          {[
+            { Icon: Twitter, name: 'Twitter', href: 'https://twitter.com' },
+            { Icon: Github, name: 'Github', href: 'https://github.com' },
+            { Icon: Linkedin, name: 'LinkedIn', href: 'https://linkedin.com' },
+          ].map((social) => (
+            <a
+              key={social.name}
+              href={social.href}
+              aria-label={social.name}
+              className="w-10 h-10 bg-vybe-darkgray border-2 border-vybe-light/20 flex items-center justify-center hover:bg-vybe-primary hover:border-vybe-black hover:text-vybe-black transition-all shadow-none hover:shadow-[4px_4px_0px_0px_#0a1f0c] hover:-translate-y-1"
+            >
+              <social.Icon className="w-5 h-5" />
             </a>
           ))}
         </div>

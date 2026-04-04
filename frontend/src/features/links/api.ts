@@ -1,6 +1,6 @@
 import { apiClient } from '@/lib/api-client';
-import { linkSchema, createLinkSchema } from './schema';
-import type { Link, CreateLink } from './types';
+import { createLinkSchema, linkSchema } from './schema';
+import type { CreateLink, Link } from './types';
 
 export const linksApi = {
   async getAll(): Promise<Link[]> {

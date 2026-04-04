@@ -1,15 +1,11 @@
-import { useEffect } from 'react';
-import { useAnalyticsStore } from './store';
+import { useCallback, useEffect } from 'react';
 import { analyticsApi } from './api';
+import { useAnalyticsStore } from './store';
 
 export function useAnalytics(linkId?: string) {
   const { analytics, setAnalytics, setLoading, setError } = useAnalyticsStore();
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, [linkId]);
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
       const data = await analyticsApi.getAnalytics(linkId);
@@ -20,7 +16,11 @@ export function useAnalytics(linkId?: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [linkId, setAnalytics, setError, setLoading]);
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
 
   return {
     analytics,

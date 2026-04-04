@@ -25,9 +25,7 @@ export const useLinksStore = create<LinksStore>()(
         addLink: (link) => set((state) => ({ links: [link, ...state.links] })),
         updateLink: (id, updates) =>
           set((state) => ({
-            links: state.links.map((link) =>
-              link.id === id ? { ...link, ...updates } : link
-            ),
+            links: state.links.map((link) => (link.id === id ? { ...link, ...updates } : link)),
           })),
         deleteLink: (id) =>
           set((state) => ({

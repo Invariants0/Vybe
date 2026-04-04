@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { linkSchema } from '@/features/links/schema';
+import { NextResponse } from 'next/server';
 
 // Mock data - replace with actual database
 const mockLinks = [
@@ -35,14 +35,14 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const validated = linkSchema.parse(body);
-    
+
     // Mock creation - replace with actual database insert
     const newLink = {
       ...validated,
       id: Math.random().toString(36).substring(7),
       createdAt: new Date(),
     };
-    
+
     return NextResponse.json(newLink, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });

@@ -1,31 +1,41 @@
-"use client";
+'use client';
 
-import Link from 'next/link';
 import { Button } from '@/components/ui';
+import Link from 'next/link';
 
 export function HeroShortener() {
   return (
-    <section id="product" className="relative border-b-2 border-vybe-black bg-vybe-primary overflow-hidden" style={{
-      backgroundImage: 'radial-gradient(#0a1f0c 2px, transparent 2px)',
-      backgroundSize: '32px 32px',
-      backgroundColor: 'var(--color-vybe-primary)'
-    }}>
-      <div className="absolute inset-0 bg-vybe-primary/80"></div>
+    <section
+      id="product"
+      className="relative border-b-2 border-vybe-black bg-vybe-primary overflow-hidden"
+      style={{
+        backgroundImage: 'radial-gradient(#0a1f0c 2px, transparent 2px)',
+        backgroundSize: '32px 32px',
+        backgroundColor: 'var(--color-vybe-primary)',
+      }}
+    >
+      <div className="absolute inset-0 bg-vybe-primary/80" />
       <div className="relative max-w-7xl mx-auto px-6 py-24 md:py-32 grid lg:grid-cols-2 gap-12 items-center">
-        
         {/* Left Column */}
         <div className="space-y-8">
           <div className="inline-flex items-center gap-2 bg-vybe-light px-4 py-2 rounded-full border-2 border-vybe-black font-bold text-sm shadow-[2px_2px_0px_0px_#0a1f0c]">
-            <span className="flex h-2 w-2 rounded-full bg-vybe-dark animate-pulse"></span>
+            <span className="flex h-2 w-2 rounded-full bg-vybe-dark animate-pulse" />
             NEW: AI Content Assistant 2.0
           </div>
-          
+
           <h1 className="text-5xl md:text-7xl font-heading font-extrabold tracking-tighter leading-[1.1] min-h-[200px] md:min-h-[280px]">
-            Links that <br/>
-            <span className="text-transparent" style={{ WebkitTextStroke: '2px var(--color-vybe-black)' }}>think</span>, adapt,<br/>
+            Links that <br />
+            <span
+              className="text-transparent"
+              style={{ WebkitTextStroke: '2px var(--color-vybe-black)' }}
+            >
+              think
+            </span>
+            , adapt,
+            <br />
             and scale.
           </h1>
-          
+
           <p className="text-xl md:text-2xl font-medium max-w-lg">
             More than a shortener — a production-ready link system.
           </p>
@@ -33,13 +43,21 @@ export function HeroShortener() {
           {/* Shortener Input */}
           <div className="bg-vybe-light p-2 border-2 border-vybe-black shadow-[8px_8px_0px_0px_#0a1f0c] flex flex-col sm:flex-row gap-2 max-w-xl">
             <div className="flex-1 flex items-center px-4 bg-vybe-gray border-2 border-transparent focus-within:border-vybe-black transition-colors">
-              <svg className="w-5 h-5 text-vybe-dark/50 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="w-5 h-5 text-vybe-dark/50 mr-2"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                role="img"
+                aria-label="Link icon"
+              >
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
               </svg>
-              <input 
-                type="url" 
-                placeholder="Paste your long URL here..." 
+              <input
+                type="url"
+                placeholder="Paste your long URL here..."
                 className="w-full bg-transparent py-4 outline-none font-medium placeholder:text-vybe-dark/50"
               />
             </div>
@@ -51,7 +69,10 @@ export function HeroShortener() {
           {/* Inline Features */}
           <div className="flex flex-wrap gap-3 pt-4">
             {['AI Slugs', 'Smart Routing', 'Analytics', 'Secure Links'].map((feat) => (
-              <span key={feat} className="inline-flex items-center gap-1.5 px-3 py-1 bg-vybe-light border-2 border-vybe-black text-sm font-bold shadow-[2px_2px_0px_0px_#0a1f0c]">
+              <span
+                key={feat}
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-vybe-light border-2 border-vybe-black text-sm font-bold shadow-[2px_2px_0px_0px_#0a1f0c]"
+              >
                 ⚡ {feat}
               </span>
             ))}
@@ -63,9 +84,9 @@ export function HeroShortener() {
           <div className="bg-vybe-light border-2 border-vybe-black rounded-2xl shadow-[12px_12px_0px_0px_#0a1f0c] group-hover:shadow-[16px_16px_0px_0px_#0a1f0c] group-hover:-translate-y-2 transition-all duration-300 overflow-hidden h-full">
             {/* Browser Header */}
             <div className="bg-vybe-black px-4 py-3 flex items-center gap-2 h-12">
-              <div className="w-3 h-3 rounded-full bg-[#ff5f57]"></div>
-              <div className="w-3 h-3 rounded-full bg-[#febc2e]"></div>
-              <div className="w-3 h-3 rounded-full bg-[#28c840]"></div>
+              <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+              <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
+              <div className="w-3 h-3 rounded-full bg-[#28c840]" />
               <div className="ml-4 bg-vybe-darkgray text-vybe-light/50 text-xs px-4 py-1 rounded-full font-mono flex-1 text-center truncate">
                 vybe.link/dashboard
               </div>
@@ -81,11 +102,15 @@ export function HeroShortener() {
                   +24% this week
                 </div>
               </div>
-              
+
               {/* Fake Chart */}
               <div className="h-48 border-2 border-vybe-black bg-vybe-light p-4 flex items-end gap-2 shadow-[4px_4px_0px_0px_#0a1f0c]">
-                {[40, 70, 45, 90, 65, 100, 80].map((h, i) => (
-                  <div key={i} className="flex-1 bg-vybe-primary border-2 border-vybe-black relative group/bar transition-all hover:bg-vybe-accent" style={{ height: `${h}%` }}>
+                {[40, 70, 45, 90, 65, 100, 80].map((h) => (
+                  <div
+                    key={h}
+                    className="flex-1 bg-vybe-primary border-2 border-vybe-black relative group/bar transition-all hover:bg-vybe-accent"
+                    style={{ height: `${h}%` }}
+                  >
                     <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-vybe-black text-vybe-light text-xs px-2 py-1 opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-10">
                       {h * 123} clicks
                     </div>
@@ -106,7 +131,6 @@ export function HeroShortener() {
             </div>
           </div>
         </Link>
-
       </div>
     </section>
   );

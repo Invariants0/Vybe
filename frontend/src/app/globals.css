@@ -8,7 +8,7 @@
   --color-vybe-black: #333333;
   --color-vybe-gray: #e5e5e5;
   --color-vybe-darkgray: #d4d4d4;
-  
+
   --font-heading: var(--font-space-grotesk), sans-serif;
   --font-body: var(--font-inter), sans-serif;
 }
@@ -17,14 +17,23 @@
   body {
     @apply font-body bg-vybe-light text-vybe-black;
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading font-extrabold tracking-tighter;
   }
 }
 
 @keyframes marquee {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-33.33%); }
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-33.33%);
+  }
 }
 .animate-marquee {
   animation: marquee 20s linear infinite;
