@@ -24,12 +24,19 @@ def init_db(app):
 
     @app.before_request
     def _db_connect():
-        db.connect(reuse_if_open=True)
+        try:
+            db.connect(reuse_if_open=True)
+        except Exception as e:
+            app.logger.error(f"Failed to connect to database: {e}")
+            # Don't raise - let the request handler deal with it
 
     @app.teardown_request
     def _db_close(_exc):
         if not db.is_closed():
-            db.close()
+            try:
+                db.close()
+            except Exception:
+                pass  # Ignore errors during cleanup
 
 
 def create_tables(safe=True):

@@ -8,8 +8,13 @@ from backend.app.routes import register_routes
 
 
 def create_app():
-    # Load .env file from backend directory
-    load_dotenv("backend/.env")
+    # Load .env file from backend directory (handle both local and Docker paths)
+    env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+    if os.path.exists(env_path):
+        load_dotenv(env_path)
+    else:
+        # Fallback for Docker where env vars are already set
+        load_dotenv()
 
     app = Flask(__name__)
     config = get_config()
@@ -31,7 +36,10 @@ def create_app():
     register_routes(app)
 
     if app.config["AUTO_CREATE_TABLES"]:
-        create_tables()
+        try:
+            create_tables()
+        except Exception as e:
+            app.logger.warning(f"Failed to create tables during startup: {e}. Tables will be created on first request.")
 
     @app.get("/health")
     def health():
@@ -39,7 +47,11 @@ def create_app():
 
     @app.get("/ready")
     def readiness():
-        ping_db()
-        return jsonify(status="ready", service=app.config["APP_NAME"])
+        try:
+            ping_db()
+            return jsonify(status="ready", service=app.config["APP_NAME"])
+        except Exception as e:
+            app.logger.error(f"Readiness check failed: {e}")
+            return jsonify(status="not ready", error=str(e)), 503
 
     return app
