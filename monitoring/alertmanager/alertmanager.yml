@@ -1,0 +1,37 @@
+global:
+  resolve_timeout: 5m
+  # Replace DISCORD_WEBHOOK_URL with your actual Discord webhook
+  slack_api_url: "https://discord.com/api/webhooks/REPLACE_ME"
+
+route:
+  group_by:
+    - alertname
+    - instance
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 12h
+  receiver: discord
+
+receivers:
+  - name: discord
+    slack_configs:
+      - api_url: "https://discord.com/api/webhooks/REPLACE_ME/slack"
+        channel: "#alerts"
+        title: "[{{ .Status | toUpper }}] {{ .GroupLabels.alertname }}"
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          *Instance:* {{ .Labels.instance }}
+          {{ end }}
+        send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: critical
+    target_match:
+      severity: warning
+    equal:
+      - alertname
+      - instance

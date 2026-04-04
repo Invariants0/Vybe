@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: Vybe Dashboards
+    orgId: 1
+    folder: Vybe
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
