@@ -1,26 +1,8 @@
 """Unit tests for database configuration."""
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from peewee import SqliteDatabase
-from backend.app import create_app
-from backend.app.config.database import db
 from backend.app.models import User, ShortURL, Event, LinkVisit
 
-
-@pytest.fixture
-def app():
-    """Create test app with in-memory database."""
-    test_db = SqliteDatabase(':memory:')
-    
-    app = create_app()
-    app.config["TESTING"] = True
-    
-    db.initialize(test_db)
-    
-    with app.app_context():
-        test_db.create_tables([User, ShortURL, LinkVisit, Event])
-        yield app
-        test_db.close()
+# Uses 'app' and 'client' fixtures from parent conftest.py (PostgreSQL testcontainer)
 
 
 class TestDatabaseConnection:

@@ -1,29 +1,7 @@
 """Unit tests for error handlers."""
 import pytest
-from peewee import SqliteDatabase
-from backend.app import create_app
-from backend.app.config.database import db
-from backend.app.config.errors import AppError, ValidationError, NotFoundError, ConflictError
-from backend.app.models import User, ShortURL, Event, LinkVisit
 
-
-@pytest.fixture
-def client():
-    """Create test client with in-memory SQLite database."""
-    test_db = SqliteDatabase(':memory:')
-    
-    app = create_app()
-    app.config["TESTING"] = True
-    
-    db.initialize(test_db)
-    
-    with app.app_context():
-        test_db.create_tables([User, ShortURL, LinkVisit, Event])
-        
-        with app.test_client() as client:
-            yield client
-        
-        test_db.close()
+# Uses 'client' fixture from parent conftest.py (PostgreSQL testcontainer)
 
 
 class TestErrorHandlers:

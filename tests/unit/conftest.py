@@ -1,11 +1,8 @@
 """
-Unit test configuration - no database fixtures needed.
-Unit tests should use mocks instead of real database.
+Unit test configuration - uses PostgreSQL testcontainers like integration tests.
+This ensures consistency across all test types.
 """
 import pytest
 
-# Override the clean_database fixture from parent conftest to do nothing for unit tests
-@pytest.fixture(autouse=True)
-def clean_database():
-    """No-op for unit tests - they should use mocks."""
-    pass
+# Unit tests will use the same PostgreSQL fixtures from parent conftest
+# No need to override - they'll use the same testcontainer setup
