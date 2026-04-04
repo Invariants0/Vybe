@@ -33,12 +33,12 @@ def init_db(app):
 
 
 def create_tables(safe=True):
-    from backend.app.models import Event, ShortURL, User
+    from backend.app.models import Event, LinkVisit, ShortURL, User
 
     if db.is_closed():
         db.connect(reuse_if_open=True)
-    # Order matters: User before ShortURL (FK), ShortURL before Event (FK)
-    db.create_tables([User, ShortURL, Event], safe=safe)
+    # Order matters: User before ShortURL (FK), ShortURL before Event/LinkVisit (FK)
+    db.create_tables([User, ShortURL, LinkVisit, Event], safe=safe)
 
 
 def ping_db():
