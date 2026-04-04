@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from peewee import DoesNotExist, IntegrityError
 
-from backend.app.errors import ConflictError, NotFoundError, ValidationError
+from backend.app.config import ConflictError, NotFoundError, ValidationError
 from backend.app.models import LinkVisit, ShortURL
 from backend.app.utils.codecs import generate_short_code
 from backend.app.utils.urls import normalize_url, parse_expiration

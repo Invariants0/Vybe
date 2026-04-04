@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 
-from backend.app.errors import ValidationError
+from backend.app.config import ValidationError
 
 
 def normalize_url(url, max_length=2048):

@@ -11,6 +11,7 @@ from peewee import (
 )
 
 from backend.app.database import BaseModel
+from backend.app.models.user import User
 
 
 def utcnow():
@@ -18,26 +19,34 @@ def utcnow():
 
 
 class ShortURL(BaseModel):
+    """
+    Primary URL model aligned to the evaluator API contract and seed data.
+    Table: urls
+    """
+
     id = BigAutoField()
-    code = CharField(unique=True, max_length=32, index=True)
+    user_id = ForeignKeyField(User, backref="urls", column_name="user_id", null=True, index=True)
+    short_code = CharField(unique=True, max_length=32, index=True)
     original_url = TextField()
+    title = CharField(null=True, max_length=512)
     is_active = BooleanField(default=True, index=True)
-    click_count = IntegerField(default=0)
-    creator_ip = CharField(null=True, max_length=64)
     created_at = DateTimeField(default=utcnow, index=True)
     updated_at = DateTimeField(default=utcnow)
-    expires_at = DateTimeField(null=True, index=True)
-    last_accessed_at = DateTimeField(null=True)
 
     class Meta:
-        table_name = "short_urls"
+        table_name = "urls"
 
     def save(self, *args, **kwargs):
         self.updated_at = utcnow()
         return super().save(*args, **kwargs)
 
 
-class   LinkVisit(BaseModel):
+class LinkVisit(BaseModel):
+    """
+    Per-redirect visit tracking. Kept for backwards compat with /api/v1/links.
+    Table: link_visits
+    """
+
     id = BigAutoField()
     short_url = ForeignKeyField(ShortURL, backref="visits", on_delete="CASCADE")
     ip_address = CharField(null=True, max_length=64)
