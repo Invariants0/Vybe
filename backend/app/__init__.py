@@ -8,12 +8,10 @@ from backend.app.routes import register_routes
 
 
 def create_app():
-    # Load .env file from backend directory (handle both local and Docker paths)
     env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
     if os.path.exists(env_path):
         load_dotenv(env_path)
     else:
-        # Fallback for Docker where env vars are already set
         load_dotenv()
 
     app = Flask(__name__)

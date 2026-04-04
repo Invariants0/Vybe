@@ -12,7 +12,6 @@ build/
 
 # Environment variables
 .env
-.tracks/
 logs/*.log
 
 # uv
@@ -34,3 +33,6 @@ Thumbs.db
 
 # Judging (not visible to participants)
 judging/
+
+# Others
+.tracks/

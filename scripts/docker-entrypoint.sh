@@ -3,11 +3,9 @@ set -e
 
 echo "Starting application..."
 
-# Only wait for database if DATABASE_HOST is set and not localhost
 if [ -n "${DATABASE_HOST}" ] && [ "${DATABASE_HOST}" != "localhost" ]; then
   echo "Waiting for database at ${DATABASE_HOST}:${DATABASE_PORT:-5432}..."
   
-  # Wait for PostgreSQL to be ready (max 30 seconds)
   timeout=30
   elapsed=0
   until nc -z "${DATABASE_HOST}" "${DATABASE_PORT:-5432}" || [ $elapsed -ge $timeout ]; do
@@ -21,7 +19,6 @@ if [ -n "${DATABASE_HOST}" ] && [ "${DATABASE_HOST}" != "localhost" ]; then
   else
     echo "Database is up - initializing tables..."
     
-    # Try to initialize tables
     python -c "
 from backend.app import create_app
 from backend.app.config import create_tables
@@ -41,6 +38,5 @@ else
   echo "No external database configured, skipping database wait..."
 fi
 
-echo "Starting gunicorn..."
+echo "Starting app..."
 exec "$@"
-

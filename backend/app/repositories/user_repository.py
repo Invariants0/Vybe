@@ -15,7 +15,6 @@ class UserRepository(BaseRepository[User]):
         return self.get_one(username=username)
 
     def get_or_create_for_import(self, user_id: int, username: str, email: str, created_at: datetime) -> User:
-        """Specific method for bulk import to handle get_or_create logic"""
         user, _ = User.get_or_create(
             id=user_id,
             defaults={

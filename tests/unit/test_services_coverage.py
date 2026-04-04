@@ -1,4 +1,3 @@
-"""Additional service tests for coverage."""
 import pytest
 from unittest.mock import Mock, MagicMock
 from backend.app.services.user_service import UserService
@@ -11,10 +10,8 @@ from datetime import datetime
 
 
 class TestUserServiceCoverage:
-    """Additional user service tests."""
     
     def test_get_user_by_username_not_found(self):
-        """Test getting user by username when not found."""
         user_repo = MagicMock()
         user_repo.find_by_username.return_value = None
         
@@ -24,7 +21,6 @@ class TestUserServiceCoverage:
         assert result is None
     
     def test_update_user_with_kwargs(self):
-        """Test updating user with kwargs instead of dict."""
         user_repo = MagicMock()
         mock_user = User(id=1, username="updated", email="test@example.com")
         user_repo.update.return_value = mock_user
@@ -36,7 +32,6 @@ class TestUserServiceCoverage:
         user_repo.update.assert_called_once()
     
     def test_update_user_no_changes(self):
-        """Test updating user with no actual changes."""
         user_repo = MagicMock()
         mock_user = User(id=1, username="test", email="test@example.com")
         user_repo.get_by_id.return_value = mock_user
@@ -49,10 +44,8 @@ class TestUserServiceCoverage:
 
 
 class TestUrlServiceCoverage:
-    """Additional URL service tests."""
     
     def test_get_url_not_found(self):
-        """Test getting URL by ID when not found."""
         url_repo = MagicMock()
         url_repo.get_by_id.return_value = None
         
@@ -62,7 +55,6 @@ class TestUrlServiceCoverage:
         assert result is None
     
     def test_get_url_by_code_not_found(self):
-        """Test getting URL by code when not found."""
         url_repo = MagicMock()
         url_repo.find_by_code.return_value = None
         
@@ -72,7 +64,6 @@ class TestUrlServiceCoverage:
         assert result is None
     
     def test_update_url_no_changes(self):
-        """Test updating URL with no changes."""
         url_repo = MagicMock()
         mock_url = ShortURL(id=1, short_code="abc", original_url="https://example.com")
         url_repo.get_by_id.return_value = mock_url
@@ -83,7 +74,6 @@ class TestUrlServiceCoverage:
         assert result == mock_url
     
     def test_update_url_is_active_string_true(self):
-        """Test updating is_active with string 'true'."""
         url_repo = MagicMock()
         mock_url = ShortURL(id=1, short_code="abc", original_url="https://example.com", is_active=True)
         url_repo.update.return_value = mock_url
@@ -94,7 +84,6 @@ class TestUrlServiceCoverage:
         url_repo.update.assert_called_once()
     
     def test_update_url_is_active_string_false(self):
-        """Test updating is_active with string 'false'."""
         url_repo = MagicMock()
         mock_url = ShortURL(id=1, short_code="abc", original_url="https://example.com", is_active=False)
         url_repo.update.return_value = mock_url
@@ -105,7 +94,6 @@ class TestUrlServiceCoverage:
         url_repo.update.assert_called_once()
     
     def test_list_urls_no_filter(self):
-        """Test listing all URLs without user filter."""
         url_repo = MagicMock()
         url_repo.get_all.return_value = []
         
@@ -115,7 +103,6 @@ class TestUrlServiceCoverage:
         url_repo.get_all.assert_called_once()
     
     def test_list_urls_with_user_filter(self):
-        """Test listing URLs filtered by user."""
         url_repo = MagicMock()
         url_repo.list_for_user.return_value = []
         
@@ -126,10 +113,8 @@ class TestUrlServiceCoverage:
 
 
 class TestEventServiceCoverage:
-    """Additional event service tests."""
     
     def test_list_events_no_filter(self):
-        """Test listing all events without filter."""
         event_repo = MagicMock()
         event_repo.get_all.return_value = []
         
@@ -139,7 +124,6 @@ class TestEventServiceCoverage:
         event_repo.get_all.assert_called_once()
     
     def test_list_events_with_url_filter(self):
-        """Test listing events filtered by URL."""
         event_repo = MagicMock()
         event_repo.list_for_url.return_value = []
         
@@ -149,7 +133,6 @@ class TestEventServiceCoverage:
         event_repo.list_for_url.assert_called_once()
     
     def test_serialize_event_with_user(self):
-        """Test serializing event with user."""
         mock_url = MagicMock()
         mock_url.id = 1
         
@@ -172,7 +155,6 @@ class TestEventServiceCoverage:
         assert result["event_type"] == "created"
     
     def test_serialize_event_without_user(self):
-        """Test serializing event without user."""
         mock_url = MagicMock()
         mock_url.id = 1
         

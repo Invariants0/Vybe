@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 try:
     import redis
-except Exception:  # pragma: no cover - redis is optional at runtime
+except Exception: 
     redis = None  # type: ignore[assignment]
 
 _client: Optional["redis.Redis"] = None  # type: ignore[type-arg]
@@ -51,8 +51,6 @@ def get_client(config: Optional[dict[str, Any]] = None) -> Optional["redis.Redis
             socket_connect_timeout=0.5,
             max_connections=16,  # 8 threads per worker + headroom
         )
-        # Eagerly PING to catch misconfiguration at startup rather than silently
-        # swallowing it on the first real request.
         _client.ping()
         logger.info("Redis connection established: %s", url.split("@")[-1])
         return _client
@@ -109,7 +107,6 @@ def cache_delete(key: str, config: Optional[dict[str, Any]] = None) -> bool:
             logger.debug("Deleted %d keys matching pattern %s", deleted_count, key)
             return True
         else:
-            # Standard delete for non-wildcard keys
             client.delete(key)
             return True
     except Exception as e:

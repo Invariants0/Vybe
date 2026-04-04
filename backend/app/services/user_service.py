@@ -15,28 +15,22 @@ class UserService:
         self.repo = user_repo or UserRepository()
 
     def create_user(self, username: str, email: str) -> User:
-        """Create a new user. Raises IntegrityError if username/email exists."""
         return self.repo.create(username=username, email=email)
 
     def get_user(self, user_id: int) -> Optional[User]:
-        """Fetch user by ID."""
         return self.repo.get_by_id(user_id)
 
     def get_user_by_username(self, username: str) -> Optional[User]:
-        """Fetch user by username."""
         return self.repo.find_by_username(username)
 
     def get_all_users(self) -> List[User]:
-        """Get all users (for testing/admin purposes)."""
         return list(User.select())
 
     def list_users(self, page: int = 1, per_page: int = 50) -> List[User]:
-        """List users with pagination."""
         skip = (page - 1) * per_page
         return self.repo.get_all(skip=skip, limit=per_page, order_by=User.id)
 
     def update_user(self, user_id: int, data: Dict[str, Any] = None, **kwargs) -> Optional[User]:
-        """Update user fields. Accepts both dict and kwargs for flexibility."""
         if data is None:
             data = kwargs
         else:
@@ -54,19 +48,12 @@ class UserService:
         return self.repo.update(user_id, **updates)
 
     def bulk_import_csv(self, file_content: str) -> int:
-        """
-        Import users from CSV string.
-        Format: id,username,email,created_at
-        """
         f = io.StringIO(file_content.strip())
         reader = csv.DictReader(f)
         imported_count = 0
 
-        # We'll use atomic transaction for speed if needed, 
-        # but the evaluator spec is simple.
         for row in reader:
             try:
-                # Clean the timestamp (handle trailing 'x' and other junk)
                 raw_created_at = row.get("created_at", "").strip()
                 if raw_created_at.endswith("x"):
                     raw_created_at = raw_created_at[:-1]
@@ -84,6 +71,6 @@ class UserService:
                 )
                 imported_count += 1
             except (KeyError, ValueError, IntegrityError):
-                continue  # Skip malformed or duplicate rows
+                continue
 
         return imported_count

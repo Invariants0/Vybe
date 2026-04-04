@@ -1,6 +1,6 @@
 import json
 import pytest
-# Uses 'client' fixture from conftest.py
+
 
 def test_create_user(client):
     response = client.post("/users", json={"username": "testuser", "email": "test@vybe.local"})
@@ -10,14 +10,14 @@ def test_create_user(client):
     assert data["email"] == "test@vybe.local"
     assert "id" in data
 
+
 def test_create_user_invalid_schema(client):
-    """Failing email format validation should return 422."""
     response = client.post("/users", json={"username": "testuser", "email": "invalid-email"})
     assert response.status_code == 422
     assert response.get_json()["error"] == "validation_error"
 
+
 def test_list_users(client):
-    # Create two users
     client.post("/users", json={"username": "user1", "email": "1@vybe.local"})
     client.post("/users", json={"username": "user2", "email": "2@vybe.local"})
     
@@ -25,6 +25,7 @@ def test_list_users(client):
     assert response.status_code == 200
     data = response.get_json()
     assert len(data) >= 2
+
 
 def test_get_user(client):
     create_response = client.post("/users", json={"username": "getuser", "email": "get@vybe.local"})
@@ -34,9 +35,11 @@ def test_get_user(client):
     assert response.status_code == 200
     assert response.get_json()["username"] == "getuser"
 
+
 def test_get_user_not_found(client):
     response = client.get("/users/999999")
     assert response.status_code == 404
+
 
 def test_update_user(client):
     create_response = client.post("/users", json={"username": "upuser", "email": "up@vybe.local"})

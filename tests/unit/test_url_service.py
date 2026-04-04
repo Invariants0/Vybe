@@ -1,4 +1,3 @@
-"""Unit tests for UrlService."""
 import json
 import pytest
 from unittest.mock import MagicMock, patch
@@ -21,12 +20,7 @@ def service():
     return svc, url_repo, user_repo, event_repo
 
 
-# ---------------------------------------------------------------------------
-# create_url
-# ---------------------------------------------------------------------------
-
 def test_create_url_user_not_found(service):
-    """Bronze Tier: Fail if user doesn't exist."""
     svc, url_repo, user_repo, event_repo = service
     user_repo.get_by_id.return_value = None
 
@@ -35,7 +29,6 @@ def test_create_url_user_not_found(service):
 
 
 def test_create_url_success(service):
-    """Bronze Tier: Successfully create URL and log event."""
     svc, url_repo, user_repo, event_repo = service
 
     mock_user = MagicMock(spec=User)
@@ -48,9 +41,8 @@ def test_create_url_success(service):
     mock_url.original_url = "https://google.com"
     mock_url.user_id_id = 1
     url_repo.create.return_value = mock_url
-    url_repo.find_by_code.return_value = None  # unique code
+    url_repo.find_by_code.return_value = None
 
-    # Patch cache_set so the test doesn't need a Redis server
     with patch("backend.app.services.url_service.cache_set"):
         result = svc.create_url(user_id=1, original_url="https://google.com", title="Google")
 
@@ -58,12 +50,7 @@ def test_create_url_success(service):
     event_repo.log_event.assert_called_once_with(mock_url, "created", user=mock_user)
 
 
-# ---------------------------------------------------------------------------
-# resolve_redirect — DB path (cache miss)
-# ---------------------------------------------------------------------------
-
 def test_resolve_redirect_success_db_path(service):
-    """Bronze Tier: Resolve valid short code (no cache) and log access event."""
     svc, url_repo, user_repo, event_repo = service
 
     mock_url = MagicMock(spec=ShortURL)
@@ -82,32 +69,19 @@ def test_resolve_redirect_success_db_path(service):
     event_repo.log_event.assert_called_once_with(mock_url, "accessed")
 
 
-# ---------------------------------------------------------------------------
-# resolve_redirect — cache hit path
-# ---------------------------------------------------------------------------
-
 def test_resolve_redirect_success_cache_hit(service):
-    """Gold Tier: Cache hit should return URL and still log the access event."""
     svc, url_repo, user_repo, event_repo = service
-
     cached_payload = json.dumps({"id": 42, "original_url": "https://cached.com", "user_id": 7})
 
     with patch("backend.app.services.url_service.cache_get", return_value=cached_payload):
         result = svc.resolve_redirect("cached_code")
 
     assert result == "https://cached.com"
-    # Event must still be logged even on a cache hit — the P0 bug must stay fixed
     event_repo.log_event.assert_called_once()
-    # DB must NOT be queried at all on cache hit
     url_repo.find_by_code.assert_not_called()
 
 
-# ---------------------------------------------------------------------------
-# resolve_redirect — inactive / not found
-# ---------------------------------------------------------------------------
-
 def test_resolve_redirect_inactive(service):
-    """Bronze Tier: Return None for inactive URLs."""
     svc, url_repo, user_repo, event_repo = service
 
     mock_url = MagicMock(spec=ShortURL)
@@ -124,7 +98,6 @@ def test_resolve_redirect_inactive(service):
 
 
 def test_resolve_redirect_not_found(service):
-    """Return None when short code doesn't exist in DB."""
     svc, url_repo, user_repo, event_repo = service
     url_repo.find_by_code.return_value = None
 
@@ -135,12 +108,7 @@ def test_resolve_redirect_not_found(service):
     event_repo.log_event.assert_not_called()
 
 
-# ---------------------------------------------------------------------------
-# resolve_redirect — corrupt cache
-# ---------------------------------------------------------------------------
-
 def test_resolve_redirect_corrupt_cache_falls_back_to_db(service):
-    """Corrupt cache entry should be evicted and DB path used as fallback."""
     svc, url_repo, user_repo, event_repo = service
 
     mock_url = MagicMock(spec=ShortURL)
@@ -161,12 +129,7 @@ def test_resolve_redirect_corrupt_cache_falls_back_to_db(service):
     event_repo.log_event.assert_called_once_with(mock_url, "accessed")
 
 
-# ---------------------------------------------------------------------------
-# update_url — cache invalidation
-# ---------------------------------------------------------------------------
-
 def test_update_url_evicts_cache(service):
-    """P1 fix: Updating a URL must evict its cache entry immediately."""
     svc, url_repo, user_repo, event_repo = service
 
     mock_url = MagicMock(spec=ShortURL)
@@ -180,7 +143,6 @@ def test_update_url_evicts_cache(service):
 
 
 def test_update_url_no_changes_skips_cache(service):
-    """update_url with empty data must not attempt any cache eviction."""
     svc, url_repo, user_repo, event_repo = service
 
     mock_url = MagicMock(spec=ShortURL)

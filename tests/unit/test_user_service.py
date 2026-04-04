@@ -6,18 +6,13 @@ from backend.app.models.user_model import User
 
 @pytest.fixture
 def service():
-    # Mock repositories
+    """Provides UserService initialized with mocked repository dependencies."""
     user_repo = MagicMock()
-    
-    # Initialize service with mocked dependencies
-    service = UserService(
-        user_repo=user_repo
-    )
+    service = UserService(user_repo=user_repo)
     return service, user_repo
 
 
 def test_create_user_success(service):
-    """Bronze Tier: Successfully create a user via service layer."""
     svc, user_repo = service
     
     mock_user = User(id=1, username="newuser", email="newuser@example.com")
@@ -30,7 +25,6 @@ def test_create_user_success(service):
 
 
 def test_get_user_by_username(service):
-    """Bronze Tier: Fetch user by username."""
     svc, user_repo = service
     
     mock_user = User(id=1, username="testuser")
@@ -43,7 +37,6 @@ def test_get_user_by_username(service):
 
 
 def test_update_user(service):
-    """Bronze Tier: Update user details."""
     svc, user_repo = service
     
     mock_user = User(id=1, username="updateduser")

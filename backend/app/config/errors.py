@@ -32,7 +32,7 @@ class ConflictError(AppError):
 def register_error_handlers(app):
     @app.errorhandler(BadRequest)
     def _handle_bad_request(error):
-        """Handle malformed JSON and other bad requests."""
+        # Handle malformed JSON and other bad requests
         return jsonify({"error": "bad_request", "message": str(error)}), 400
 
     @app.errorhandler(AppError)

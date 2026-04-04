@@ -39,10 +39,6 @@ class UrlService:
         self.event_repo = event_repo or EventRepository()
 
     def create_url(self, user_id: int, original_url: str, title: str) -> ShortURL:
-        """
-        Create a new short URL for a user.
-        Validates user exists, generates unique short_code, creates 'created' event.
-        """
         user = self.user_repo.get_by_id(user_id)
         if not user:
             raise ValueError(f"User with id {user_id} does not exist.")
@@ -63,21 +59,17 @@ class UrlService:
         return short_url
 
     def get_url(self, url_id: int) -> Optional[ShortURL]:
-        """Fetch URL by ID."""
         return self.repo.get_by_id(url_id)
 
     def get_url_by_code(self, short_code: str) -> Optional[ShortURL]:
-        """Fetch URL by its short code."""
         return self.repo.find_by_code(short_code)
 
     def list_urls(self, user_id: Optional[int] = None) -> List[ShortURL]:
-        """List all URLs, optionally filtered by user_id."""
         if user_id:
             return self.repo.list_for_user(user_id=user_id)
         return self.repo.get_all(order_by=ShortURL.id)
 
     def update_url(self, url_id: int, data: Dict[str, Any]) -> Optional[ShortURL]:
-        """Update URL title or status and immediately evict the cache."""
         updates = {}
         if "title" in data:
             updates["title"] = data["title"]
@@ -93,7 +85,6 @@ class UrlService:
 
         obj = self.repo.update(url_id, **updates)
         if obj:
-            # Evict immediately so deactivated/updated links are not served from stale cache.
             cache_key = f"shorturl:{obj.short_code}"
             cache_delete(cache_key, self.config)
         return obj
@@ -116,7 +107,6 @@ class UrlService:
         if cached_raw:
             try:
                 data = json.loads(cached_raw)
-
                 uid = data.get("user_id")
                 cached_url_obj = _CachedURL(
                     id=data["id"],
@@ -126,13 +116,10 @@ class UrlService:
                 )
                 self._maybe_log_event(cached_url_obj)  # type: ignore[arg-type]
                 return cached_url_obj.original_url
-
             except Exception:
-                # Corrupt / stale cache blob — delete and fall through to DB.
                 logger.warning("Corrupt cache entry for short_code=%s, evicting.", short_code)
                 cache_delete(f"shorturl:{short_code}", self.config)
 
-        # --- DB path ---
         short_url = self.get_url_by_code(short_code)
         if not short_url or not short_url.is_active:
             return None
@@ -141,12 +128,10 @@ class UrlService:
         self._cache_short_url(short_url)
         return short_url.original_url
 
-    # ------------------------------------------------------------------
-    # Private helpers
-    # ------------------------------------------------------------------
+
+
 
     def _generate_unique_code(self) -> str:
-        """Generate a unique short code with up to 10 collision retries."""
         for _ in range(10):
             code = generate_short_code(self.short_code_length)
             if not self.repo.find_by_code(code):
@@ -154,7 +139,6 @@ class UrlService:
         raise IntegrityError("Could not generate a unique short code after 10 attempts.")
 
     def _get_cached_raw(self, short_code: str) -> Optional[str]:
-        """Return the raw JSON string from cache, or None."""
         return cache_get(f"shorturl:{short_code}", self.config)
 
     def _cache_short_url(self, url_obj: ShortURL) -> None:
@@ -171,10 +155,8 @@ class UrlService:
         ttl = int(self.config.get("REDIS_DEFAULT_TTL_SECONDS", 300))
         cache_key = f"shorturl:{url_obj.short_code}"
 
-        # Prefer raw FK integer to avoid a lazy Peewee SELECT.
         raw_uid: Optional[int] = getattr(url_obj, "user_id_id", None)
         if raw_uid is None:
-            # Fallback for mocks / already-loaded objects
             try:
                 fk = object.__getattribute__(url_obj, "user_id")
                 raw_uid = fk.id if fk is not None else None
@@ -191,7 +173,7 @@ class UrlService:
         cache_set(cache_key, payload, ttl, self.config)
 
     def _maybe_log_event(self, short_url: Any) -> None:
-        """Probabilistically log an 'accessed' event based on EVENT_LOG_SAMPLE_RATE."""
+        """Probabilistically log an 'accessed' event based on EVENT_LOG_SAMPLE_RATE"""
         if not short_url:
             return
         sample_rate = float(self.config.get("EVENT_LOG_SAMPLE_RATE", 1.0))

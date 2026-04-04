@@ -1,5 +1,5 @@
 import pytest
-# Uses 'client' and 'test_user' fixtures from conftest.py
+
 
 def test_create_url(client, test_user):
     user_id = test_user["id"]
@@ -16,6 +16,7 @@ def test_create_url(client, test_user):
     assert "short_code" in data
     assert data["is_active"] is True
 
+
 def test_create_url_invalid_url(client, test_user):
     user_id = test_user["id"]
     response = client.post("/urls", json={
@@ -25,6 +26,7 @@ def test_create_url_invalid_url(client, test_user):
     assert response.status_code == 422
     assert response.get_json()["error"] == "validation_error"
 
+
 def test_redirect(client, test_user):
     user_id = test_user["id"]
     create_response = client.post("/urls", json={
@@ -33,11 +35,12 @@ def test_redirect(client, test_user):
     })
     short_code = create_response.get_json()["short_code"]
 
-    # Redirect GET should yield 302
     response = client.get(f"/{short_code}")
     assert response.status_code == 302
     assert response.headers["Location"] == "https://mlh.io"
 
+
 def test_redirect_not_found(client):
     response = client.get("/invalid_code_no_exist")
     assert response.status_code == 404
+

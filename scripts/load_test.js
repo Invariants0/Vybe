@@ -20,6 +20,8 @@
  *   k6 run scripts/load_test.js
  *   k6 run --env BASE_URL=http://localhost scripts/load_test.js
  */
+
+
 import http from "k6/http";
 import { check, sleep } from "k6";
 import { Rate, Trend } from "k6/metrics";
@@ -55,7 +57,7 @@ export const options = {
  */
 export function setup() {
   console.log("🚀 Setup: Creating test users and URLs...");
-  
+
   // 1. Create 10 test users
   const userIds = [];
   for (let i = 0; i < 10; i++) {
@@ -63,7 +65,7 @@ export function setup() {
       username: `loadtest_user_${Date.now()}_${i}`,
       email: `loadtest_${Date.now()}_${i}@example.com`
     });
-    
+
     const res = http.post(`${BASE_URL}/users`, userPayload, {
       headers: { "Content-Type": "application/json" },
     });
@@ -80,7 +82,7 @@ export function setup() {
   // 2. Create 100 fixed URLs (reused across all VU iterations)
   const urlIds = [];
   const shortCodes = [];
-  
+
   for (let i = 0; i < 100; i++) {
     const userId = userIds[i % userIds.length]; // Cycle through users
     const urlPayload = JSON.stringify({

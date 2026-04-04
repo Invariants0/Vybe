@@ -6,7 +6,6 @@ links_bp = Blueprint("links", __name__)
 
 
 def _get_service():
-    """Cache UrlService on the app object — same rationale as url_routes."""
     app = current_app._get_current_object()
     svc = getattr(app, "_link_url_service", None)
     if svc is None:

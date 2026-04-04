@@ -10,15 +10,13 @@ from backend.app.models import Event, ShortURL, User, LinkVisit
 
 @pytest.fixture(scope="session")
 def postgres_container():
-    """Start a PostgreSQL container for testing."""
     with PostgresContainer("postgres:16-alpine") as postgres:
         yield postgres
 
 
 @pytest.fixture(scope="session")
 def app(postgres_container):
-    """Create Flask app with PostgreSQL for testing."""
-    # Get connection details from testcontainer
+    """Initialize the Flask application configured for containerized testing."""
     test_db = PooledPostgresqlDatabase(
         postgres_container.dbname,
         host=postgres_container.get_container_host_ip(),
@@ -33,11 +31,10 @@ def app(postgres_container):
     app = create_app()
     app.config["TESTING"] = True
     
-    # Override database with PostgreSQL testcontainer
+    # Use the testcontainer database pool
     db.initialize(test_db)
     
     with app.app_context():
-        # Create all tables
         test_db.create_tables([User, ShortURL, LinkVisit, Event])
         yield app
         test_db.close()
@@ -45,14 +42,14 @@ def app(postgres_container):
 
 @pytest.fixture(scope="function")
 def client(app):
-    """Test client for performing HTTP requests."""
+    """Provides a Flask test client for integration testing."""
     with app.test_client() as client:
         yield client
 
 
 @pytest.fixture(autouse=True)
 def clean_database(app):
-    """Clean all tables before every test runs to ensure test isolation."""
+    """Ensure strict test isolation by truncating tables before each test execution."""
     if db.is_closed():
         db.connect()
     
@@ -65,6 +62,7 @@ def clean_database(app):
 
 @pytest.fixture(scope="function")
 def test_user(client):
-    """Create a test user for integration tests."""
+    """Bootstrap a standard test user for authenticated request flows."""
     response = client.post("/users", json={"username": "urltester", "email": "url@vybe.local"})
     return response.get_json()
+

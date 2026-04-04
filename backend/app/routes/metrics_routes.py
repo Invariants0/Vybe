@@ -1,4 +1,3 @@
-"""Prometheus metrics endpoint and instrumentation."""
 import time
 from flask import Blueprint, request, Response
 from prometheus_client import (
@@ -13,7 +12,9 @@ from prometheus_client import (
 
 metrics_bp = Blueprint("metrics", __name__)
 
-# ── Prometheus metrics ──────────────────────────────────────────────────────
+
+
+# ── Prometheus metrics ────────────────────────────────────────── ///
 REQUEST_COUNT = Counter(
     "http_requests_total",
     "Total number of HTTP requests",
@@ -40,7 +41,7 @@ ERROR_COUNT = Counter(
 
 
 def init_metrics(app):
-    """Register before/after request hooks to track metrics."""
+    # Register before/after request hooks to track metrics
 
     @app.before_request
     def before_request_metrics():
@@ -72,5 +73,4 @@ def init_metrics(app):
 
 @metrics_bp.route("/metrics")
 def metrics():
-    """Expose Prometheus metrics."""
     return Response(generate_latest(REGISTRY), mimetype=CONTENT_TYPE_LATEST)

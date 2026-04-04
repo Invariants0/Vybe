@@ -13,3 +13,4 @@ class UrlRepository(BaseRepository[ShortURL]):
 
     def list_for_user(self, user_id: int, skip: int = 0, limit: int = 100) -> List[ShortURL]:
         return self.get_all(skip=skip, limit=limit, order_by=ShortURL.id, user_id=user_id)
+        

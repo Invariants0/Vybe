@@ -13,8 +13,7 @@ class CreateUserSchema(BaseModel):
     @field_validator('email')
     @classmethod
     def validate_email(cls, v: str) -> str:
-        """Validate email format - more permissive than EmailStr to allow .local domains."""
-        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', v):
+        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', v):   # TODO: Revisit this regex
             raise ValueError('value is not a valid email address: An email address must have an @-sign.')
         return v
 
@@ -28,7 +27,6 @@ class UpdateUserSchema(BaseModel):
     @field_validator('email')
     @classmethod
     def validate_email(cls, v: Optional[str]) -> Optional[str]:
-        """Validate email format - more permissive than EmailStr to allow .local domains."""
         if v is not None and not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', v):
             raise ValueError('value is not a valid email address: An email address must have an @-sign.')
         return v
@@ -44,8 +42,7 @@ class CreateUrlSchema(BaseModel):
     @field_validator('original_url')
     @classmethod
     def convert_url_to_string(cls, v: HttpUrl) -> str:
-        """Convert HttpUrl to string to avoid trailing slash issues."""
-        return str(v).rstrip('/')
+        return str(v).rstrip('/')    # convert HttpUrl to string to avoid trailing slash issues
 
 
 class UpdateUrlSchema(BaseModel):

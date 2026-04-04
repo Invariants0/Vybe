@@ -28,7 +28,6 @@ def init_db(app):
             db.connect(reuse_if_open=True)
         except Exception as e:
             app.logger.error(f"Failed to connect to database: {e}")
-            # Don't raise - let the request handler deal with it
 
     @app.teardown_request
     def _db_close(_exc):
@@ -36,7 +35,7 @@ def init_db(app):
             try:
                 db.close()
             except Exception:
-                pass  # Ignore errors during cleanup
+                pass
 
 
 def create_tables(safe=True):
