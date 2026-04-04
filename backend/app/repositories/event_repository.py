@@ -11,11 +11,12 @@ class EventRepository(BaseRepository[Event]):
 
     def list_for_url(self, url_id: int, skip: int = 0, limit: int = 100) -> List[Event]:
         """List events for a URL with prefetched FKs to avoid N+1 queries."""
+        from peewee import JOIN
         return list(
             Event.select(Event, ShortURL, User)
             .join(ShortURL, on=(Event.url_id == ShortURL.id))
             .switch(Event)
-            .join(User, on=(Event.user_id == User.id), join_type="LEFT OUTER")
+            .join(User, JOIN.LEFT_OUTER, on=(Event.user_id == User.id))
             .where(Event.url_id == url_id)
             .order_by(Event.id)
             .offset(skip)
@@ -28,11 +29,12 @@ class EventRepository(BaseRepository[Event]):
         Without the JOINs, serializing 50 events triggers 100 extra SELECTs
         (one for each event.url_id.id and event.user_id.id Peewee lazy-load).
         """
+        from peewee import JOIN
         query = (
             Event.select(Event, ShortURL, User)
             .join(ShortURL, on=(Event.url_id == ShortURL.id))
             .switch(Event)
-            .join(User, on=(Event.user_id == User.id), join_type="LEFT OUTER")
+            .join(User, JOIN.LEFT_OUTER, on=(Event.user_id == User.id))
         )
         if order_by is not None:
             query = query.order_by(order_by)
