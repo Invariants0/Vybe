@@ -22,7 +22,7 @@ class EventService:
         """Convert Event model to API-friendly dictionary."""
         return {
             "id": event.id,
-            "url_id": event.url_id.id,
+            "short_url_id": event.url_id.id,
             "user_id": event.user_id.id if event.user_id else None,
             "event_type": event.event_type,
             "timestamp": event.timestamp.isoformat(),

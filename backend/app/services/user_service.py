@@ -22,13 +22,26 @@ class UserService:
         """Fetch user by ID."""
         return self.repo.get_by_id(user_id)
 
+    def get_user_by_username(self, username: str) -> Optional[User]:
+        """Fetch user by username."""
+        return self.repo.find_by_username(username)
+
+    def get_all_users(self) -> List[User]:
+        """Get all users (for testing/admin purposes)."""
+        return list(User.select())
+
     def list_users(self, page: int = 1, per_page: int = 50) -> List[User]:
         """List users with pagination."""
         skip = (page - 1) * per_page
         return self.repo.get_all(skip=skip, limit=per_page, order_by=User.id)
 
-    def update_user(self, user_id: int, data: Dict[str, Any]) -> Optional[User]:
-        """Update user fields."""
+    def update_user(self, user_id: int, data: Dict[str, Any] = None, **kwargs) -> Optional[User]:
+        """Update user fields. Accepts both dict and kwargs for flexibility."""
+        if data is None:
+            data = kwargs
+        else:
+            data = {**data, **kwargs}
+            
         updates = {}
         if "username" in data:
             updates["username"] = data["username"]
