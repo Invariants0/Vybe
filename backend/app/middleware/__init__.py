@@ -6,10 +6,27 @@ from flask import g, has_request_context, request
 
 
 def register_middleware(app):
-    logging.basicConfig(
-        level=getattr(logging, app.config["LOG_LEVEL"].upper(), logging.INFO),
-        format="%(asctime)s %(levelname)s %(name)s request_id=%(request_id)s %(message)s",
-    )
+    import json
+    
+    class JsonFormatter(logging.Formatter):
+        def format(self, record):
+            log_record = {
+                "timestamp": self.formatTime(record, self.datefmt),
+                "level": record.levelname,
+                "name": record.name,
+                "request_id": getattr(record, "request_id", "-"),
+                "message": record.getMessage(),
+            }
+            if record.exc_info:
+                log_record["exc_info"] = self.formatException(record.exc_info)
+            return json.dumps(log_record)
+
+    root_logger = logging.getLogger()
+    root_logger.setLevel(getattr(logging, app.config["LOG_LEVEL"].upper(), logging.INFO))
+    
+    if not root_logger.handlers:
+        handler = logging.StreamHandler()
+        root_logger.addHandler(handler)
 
     class RequestIdFilter(logging.Filter):
         def filter(self, record):
@@ -19,7 +36,8 @@ def register_middleware(app):
                 record.request_id = "-"
             return True
 
-    for handler in logging.getLogger().handlers:
+    for handler in root_logger.handlers:
+        handler.setFormatter(JsonFormatter())
         handler.addFilter(RequestIdFilter())
 
     @app.before_request

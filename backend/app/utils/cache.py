@@ -91,16 +91,22 @@ def cache_delete(key: str, config: Optional[dict[str, Any]] = None) -> bool:
         return False
     try:
         # If key contains wildcard, use SCAN to find and delete matching keys
+        # If key contains wildcard, optimize deletion to avoid massive thread blocking (the O(N) SCAN issue)
         if "*" in key:
-            cursor = 0
+            # For massive datasets, keys() is discouraged, but scan with default count=10 causes
+            # thousands of blocking network round-trips to Redis, freezing Gunicorn workers.
+            # Using scan_iter with chunky batches (count=5000) traverses safely without breaking the single-threaded event loops.
             deleted_count = 0
-            while True:
-                cursor, matched_keys = client.scan(cursor, match=key)
-                if matched_keys:
-                    client.delete(*matched_keys)
-                    deleted_count += len(matched_keys)
-                if cursor == 0:
-                    break
+            batch = []
+            for k in client.scan_iter(match=key, count=5000):
+                batch.append(k)
+                if len(batch) >= 500:
+                    client.delete(*batch)
+                    deleted_count += len(batch)
+                    batch = []
+            if batch:
+                client.delete(*batch)
+                deleted_count += len(batch)
             logger.debug("Deleted %d keys matching pattern %s", deleted_count, key)
             return True
         else:
