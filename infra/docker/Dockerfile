@@ -18,6 +18,10 @@ COPY scripts ./scripts
 
 RUN pip install --upgrade pip && pip install .
 
+COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 EXPOSE 5000
 
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--threads", "8", "--timeout", "120", "--worker-tmp-dir", "/dev/shm", "--keep-alive", "5", "run:app"]
