@@ -1,9 +1,7 @@
 from dotenv import load_dotenv
 from flask import Flask, jsonify
 
-from backend.app.config import get_config
-from backend.app.database import create_tables, init_db, ping_db
-from backend.app.errors import register_error_handlers
+from backend.app.config import create_tables, get_config, init_db, ping_db, register_error_handlers
 from backend.app.middleware import register_middleware
 from backend.app.routes import register_routes
 
