@@ -1,19 +1,10 @@
-[build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "mlh-pe-hackathon"
+name = "vybe-workspace"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
-    "faker>=33.0",
-    "flask>=3.1",
-    "gunicorn>=23.0",
-    "peewee>=3.17,<4.0",
-    "psycopg2-binary>=2.9",
-    "python-dotenv>=1.0",
+    "mlh-pe-hackathon",
 ]
 
-[tool.setuptools.packages.find]
-include = ["app*"]
+[tool.uv.sources]
+mlh-pe-hackathon = { path = "backend", editable = true }

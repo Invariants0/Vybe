@@ -33,7 +33,7 @@ def init_db(app):
 
 
 def create_tables(safe=True):
-    from app.models import LinkVisit, ShortURL
+    from backend.app.models import LinkVisit, ShortURL
 
     if db.is_closed():
         db.connect(reuse_if_open=True)

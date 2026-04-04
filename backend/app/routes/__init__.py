@@ -1,5 +1,5 @@
-from app.routes.api import api_bp
-from app.routes.redirect import redirect_bp
+from backend.app.routes.api import api_bp
+from backend.app.routes.redirect import redirect_bp
 
 
 def register_routes(app):

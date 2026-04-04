@@ -1,11 +1,11 @@
 from dotenv import load_dotenv
 from flask import Flask, jsonify
 
-from app.config import get_config
-from app.database import create_tables, init_db, ping_db
-from app.errors import register_error_handlers
-from app.middleware import register_middleware
-from app.routes import register_routes
+from backend.app.config import get_config
+from backend.app.database import create_tables, init_db, ping_db
+from backend.app.errors import register_error_handlers
+from backend.app.middleware import register_middleware
+from backend.app.routes import register_routes
 
 
 def create_app():
@@ -16,7 +16,7 @@ def create_app():
 
     init_db(app)
 
-    from app import models  # noqa: F401 - ensure model registration before table setup
+    from backend.app import models  # noqa: F401 - ensure model registration before table setup
 
     register_middleware(app)
     register_error_handlers(app)

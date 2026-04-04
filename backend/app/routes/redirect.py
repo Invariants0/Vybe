@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, redirect, request
 
-from app.services.url_shortener import URLShortenerService
+from backend.app.services.url_shortener import URLShortenerService
 
 redirect_bp = Blueprint("redirect", __name__)
 

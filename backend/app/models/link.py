@@ -10,7 +10,7 @@ from peewee import (
     TextField,
 )
 
-from app.database import BaseModel
+from backend.app.database import BaseModel
 
 
 def utcnow():
@@ -37,7 +37,7 @@ class ShortURL(BaseModel):
         return super().save(*args, **kwargs)
 
 
-class LinkVisit(BaseModel):
+class   LinkVisit(BaseModel):
     id = BigAutoField()
     short_url = ForeignKeyField(ShortURL, backref="visits", on_delete="CASCADE")
     ip_address = CharField(null=True, max_length=64)
