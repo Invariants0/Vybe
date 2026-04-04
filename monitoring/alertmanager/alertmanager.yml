@@ -1,7 +1,8 @@
 global:
   resolve_timeout: 5m
-  # Replace DISCORD_WEBHOOK_URL with your actual Discord webhook
-  slack_api_url: "https://discord.com/api/webhooks/REPLACE_ME"
+  # NOTE: Alert webhook (Discord uses Slack-compatible webhook format)
+  # Alertmanager requires these keys to be named "slack_*" even for Discord
+  slack_api_url: "https://discord.com/api/webhooks/1490023453212938353/7GojR7ehPDNfJ3Jx74E-FUhf7cnCl193pMFNsubhhlqfRyS_A4GI-TbNNPTP8GjazSOY"
 
 route:
   group_by:
@@ -10,12 +11,13 @@ route:
   group_wait: 30s
   group_interval: 5m
   repeat_interval: 12h
-  receiver: discord
+  receiver: discord_notifications
 
 receivers:
-  - name: discord
+  # Discord webhook receiver (sends to Discord #alerts channel)
+  - name: discord_notifications
     slack_configs:
-      - api_url: "https://discord.com/api/webhooks/REPLACE_ME/slack"
+      - api_url: "https://discord.com/api/webhooks/1490023453212938353/7GojR7ehPDNfJ3Jx74E-FUhf7cnCl193pMFNsubhhlqfRyS_A4GI-TbNNPTP8GjazSOY/slack"
         channel: "#alerts"
         title: "[{{ .Status | toUpper }}] {{ .GroupLabels.alertname }}"
         text: |
