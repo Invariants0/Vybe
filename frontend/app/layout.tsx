@@ -1,26 +1,28 @@
-import type {Metadata} from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
-import './globals.css'; // Global styles
+import type { Metadata } from 'next';
+import { Space_Grotesk, Inter } from 'next/font/google';
+import './globals.css';
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
+});
 
 const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-sans',
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
+  variable: '--font-inter',
 });
 
 export const metadata: Metadata = {
-  title: 'Vybe - Intelligent URL Shortener',
-  description: 'Create, control, and scale your links with intelligence and reliability.',
+  title: 'VYBE - Production-Ready Link System',
+  description: 'More than a shortener — a production-ready link system.',
 };
 
-export default function RootLayout({children}: {children: React.ReactNode}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="font-sans antialiased bg-background text-foreground" suppressHydrationWarning>{children}</body>
+    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`}>
+      <body className="font-body bg-vybe-light text-vybe-black antialiased selection:bg-vybe-accent selection:text-vybe-black">
+        {children}
+      </body>
     </html>
   );
 }

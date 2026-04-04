@@ -1,199 +1,166 @@
 "use client";
+import { Navbar } from '@/components/layout/Navbar';
+import { Button } from '@/components/ui/Button';
+import { Activity, ServerCrash, AlertTriangle, Terminal, Database, Cpu } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useState, useEffect } from 'react';
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Activity, AlertTriangle, Database, ServerCrash, Terminal, Zap } from "lucide-react";
-import Link from "next/link";
+const initialData = Array.from({ length: 20 }, (_, i) => ({
+  time: i,
+  latency: 40 + Math.random() * 20,
+  errors: Math.random() > 0.8 ? Math.random() * 5 : 0,
+}));
 
-export default function AdminDashboard() {
-  const [users, setUsers] = useState([100]);
-  const [isTesting, setIsTesting] = useState(false);
-  const [logs, setLogs] = useState<{time: string, msg: string, level: 'info'|'warn'|'error'}[]>([]);
-  const [metrics, setMetrics] = useState({
-      latency: 42,
-      traffic: 120,
-      errors: 0.01,
-      status: 'Healthy'
-  });
+export default function Admin() {
+  const [data, setData] = useState(initialData);
+  const [status, setStatus] = useState('HEALTHY');
+  const [logs, setLogs] = useState<string[]>([
+    "[12:00:00] INFO: System initialized successfully.",
+    "[12:00:05] INFO: All nodes reporting healthy status."
+  ]);
 
-  const addLog = (msg: string, level: 'info'|'warn'|'error' = 'info') => {
-      const time = new Date().toLocaleTimeString([], { hour12: false });
-      setLogs(prev => [{time, msg, level}, ...prev].slice(0, 50));
+  const addLog = (msg: string) => {
+    setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`].slice(-8));
   };
 
-  const handleStartTest = () => {
-      setIsTesting(true);
-      addLog(`Started load test with ${users[0]} concurrent users`, 'info');
-      
-      // Simulate metrics changing
-      setMetrics(prev => ({
-          ...prev,
-          traffic: users[0] * 4.2,
-          latency: prev.latency + (users[0] / 10),
-      }));
+  const triggerSpike = () => {
+    setStatus('DEGRADED');
+    addLog("WARN: Artificial traffic spike initiated.");
+    const newData = [...data.slice(1), {
+      time: data[data.length - 1].time + 1,
+      latency: 300 + Math.random() * 200,
+      errors: 10 + Math.random() * 5,
+    }];
+    setData(newData);
+    setTimeout(() => {
+      setStatus('HEALTHY');
+      addLog("INFO: System recovered from traffic spike.");
+    }, 5000);
   };
 
-  const handleStopTest = () => {
-      setIsTesting(false);
-      addLog(`Stopped load test`, 'info');
-      setMetrics({
-        latency: 42,
-        traffic: 120,
-        errors: 0.01,
-        status: 'Healthy'
-    });
-  };
-
-  const triggerChaos = (type: string) => {
-      addLog(`Chaos event triggered: ${type}`, 'error');
-      setMetrics(prev => ({
-          ...prev,
-          status: 'Degraded',
-          errors: prev.errors + 5.2,
-          latency: prev.latency + 400
-      }));
-
-      setTimeout(() => {
-          addLog(`System recovered from: ${type}`, 'info');
-          setMetrics(prev => ({
-            ...prev,
-            status: 'Healthy',
-            errors: 0.01,
-            latency: 42
-        }));
-      }, 5000);
+  const killDB = () => {
+    setStatus('OUTAGE');
+    addLog("ERROR: Database connection terminated.");
+    const newData = [...data.slice(1), {
+      time: data[data.length - 1].time + 1,
+      latency: 0,
+      errors: 100,
+    }];
+    setData(newData);
+    setTimeout(() => {
+      setStatus('HEALTHY');
+      addLog("INFO: Database connection restored.");
+    }, 8000);
   };
 
   useEffect(() => {
-      addLog('Admin dashboard initialized', 'info');
-  }, []);
+    if (status === 'HEALTHY') {
+      const interval = setInterval(() => {
+        setData(prev => [...prev.slice(1), {
+          time: prev[prev.length - 1].time + 1,
+          latency: 40 + Math.random() * 20,
+          errors: Math.random() > 0.9 ? Math.random() * 2 : 0,
+        }]);
+      }, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [status]);
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 font-mono">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <main className="min-h-screen flex flex-col bg-vybe-dark text-vybe-light font-mono">
+      <Navbar />
+      <div className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
         
-        <div className="flex items-center justify-between border-b border-neutral-900 pb-6">
-            <div>
-                <h1 className="text-2xl font-bold flex items-center gap-3">
-                    <Terminal className="w-6 h-6 text-red-500" />
-                    Production Engineering Dashboard
-                </h1>
-                <p className="text-neutral-500 mt-2 text-sm">SRE Controls & Live Observability</p>
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-vybe-black border-2 border-vybe-primary p-6 shadow-[8px_8px_0px_0px_#87ceeb]">
+          <div>
+            <h1 className="text-3xl font-heading font-extrabold text-vybe-primary mb-2">SRE Dashboard</h1>
+            <div className="flex items-center gap-3">
+              <Activity className={`w-5 h-5 ${status === 'HEALTHY' ? 'text-vybe-accent' : status === 'DEGRADED' ? 'text-vybe-primary' : 'text-[#ef4444]'}`} />
+              <span className="font-bold text-lg">SYSTEM_STATUS: {status}</span>
             </div>
-            <div className="flex items-center gap-4">
-                <Link href="/dashboard">
-                    <Button variant="outline" className="border-neutral-800">Exit Admin</Button>
-                </Link>
-                <div className={`px-3 py-1.5 rounded-full text-xs font-bold border ${metrics.status === 'Healthy' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
-                    STATUS: {metrics.status.toUpperCase()}
-                </div>
+          </div>
+          <div className="flex gap-4">
+            <div className="text-right">
+              <div className="text-vybe-light/50 text-sm">ACTIVE NODES</div>
+              <div className="text-2xl font-bold">24 / 24</div>
             </div>
+            <div className="text-right">
+              <div className="text-vybe-light/50 text-sm">UPTIME</div>
+              <div className="text-2xl font-bold">99.99%</div>
+            </div>
+          </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left Column: Controls */}
-            <div className="space-y-8">
-                <Card className="bg-neutral-950 border-neutral-900 rounded-none border-l-2 border-l-cyan-500">
-                    <CardHeader>
-                        <CardTitle className="text-sm flex items-center gap-2 text-cyan-400">
-                            <Zap className="w-4 h-4" /> Load Simulator
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-4">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-neutral-400">Concurrent Users</span>
-                                <span className="text-white font-bold">{users[0]}</span>
-                            </div>
-                            <Slider 
-                                value={users} 
-                                onValueChange={setUsers} 
-                                max={1000} 
-                                step={50}
-                                disabled={isTesting}
-                            />
-                        </div>
-                        {isTesting ? (
-                            <Button onClick={handleStopTest} variant="destructive" className="w-full rounded-none font-bold">
-                                STOP SIMULATION
-                            </Button>
-                        ) : (
-                            <Button onClick={handleStartTest} className="w-full rounded-none bg-cyan-500 hover:bg-cyan-600 text-black font-bold">
-                                START SIMULATION
-                            </Button>
-                        )}
-                    </CardContent>
-                </Card>
-
-                <Card className="bg-neutral-950 border-neutral-900 rounded-none border-l-2 border-l-red-500">
-                    <CardHeader>
-                        <CardTitle className="text-sm flex items-center gap-2 text-red-400">
-                            <AlertTriangle className="w-4 h-4" /> Chaos Controls
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <Button onClick={() => triggerChaos('Kill Container')} variant="outline" className="w-full justify-start border-red-500/30 text-red-400 hover:bg-red-500/10 rounded-none">
-                            <ServerCrash className="w-4 h-4 mr-2" /> Kill Container
-                        </Button>
-                        <Button onClick={() => triggerChaos('Slow DB')} variant="outline" className="w-full justify-start border-orange-500/30 text-orange-400 hover:bg-orange-500/10 rounded-none">
-                            <Database className="w-4 h-4 mr-2" /> Simulate Slow DB
-                        </Button>
-                        <Button onClick={() => triggerChaos('Network Partition')} variant="outline" className="w-full justify-start border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 rounded-none">
-                            <Activity className="w-4 h-4 mr-2" /> Network Partition
-                        </Button>
-                    </CardContent>
-                </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Main Metrics */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-vybe-black border-2 border-vybe-darkgray p-6 shadow-[8px_8px_0px_0px_#444444]">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><Activity className="w-5 h-5" /> Latency (ms)</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={data}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444444" />
+                    <XAxis dataKey="time" hide />
+                    <YAxis stroke="#e5e5e5" />
+                    <Tooltip contentStyle={{backgroundColor: '#1a1d23', border: '2px solid #87ceeb'}} />
+                    <Line type="monotone" dataKey="latency" stroke="#87ceeb" strokeWidth={3} dot={false} isAnimationActive={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            {/* Middle Column: Metrics */}
-            <div className="lg:col-span-2 space-y-8">
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-neutral-950 border border-neutral-900 p-4">
-                        <div className="text-xs text-neutral-500 mb-2">LATENCY (p99)</div>
-                        <div className={`text-3xl font-bold ${metrics.latency > 200 ? 'text-red-400' : 'text-white'}`}>
-                            {metrics.latency.toFixed(0)}<span className="text-sm text-neutral-500 ml-1">ms</span>
-                        </div>
-                    </div>
-                    <div className="bg-neutral-950 border border-neutral-900 p-4">
-                        <div className="text-xs text-neutral-500 mb-2">TRAFFIC</div>
-                        <div className="text-3xl font-bold text-white">
-                            {metrics.traffic.toFixed(0)}<span className="text-sm text-neutral-500 ml-1">req/s</span>
-                        </div>
-                    </div>
-                    <div className="bg-neutral-950 border border-neutral-900 p-4">
-                        <div className="text-xs text-neutral-500 mb-2">ERROR RATE</div>
-                        <div className={`text-3xl font-bold ${metrics.errors > 1 ? 'text-red-400' : 'text-white'}`}>
-                            {metrics.errors.toFixed(2)}<span className="text-sm text-neutral-500 ml-1">%</span>
-                        </div>
-                    </div>
-                </div>
-
-                <Card className="bg-neutral-950 border-neutral-900 rounded-none">
-                    <CardHeader className="border-b border-neutral-900 pb-4">
-                        <CardTitle className="text-sm text-neutral-400">Live Structured Logs</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="h-[400px] overflow-y-auto p-4 space-y-2 text-xs">
-                            {logs.map((log, i) => (
-                                <div key={i} className="flex gap-4 border-b border-neutral-900/50 pb-2">
-                                    <span className="text-neutral-600 shrink-0">[{log.time}]</span>
-                                    <span className={`shrink-0 w-12 ${log.level === 'error' ? 'text-red-400' : log.level === 'warn' ? 'text-yellow-400' : 'text-cyan-400'}`}>
-                                        {log.level.toUpperCase()}
-                                    </span>
-                                    <span className={log.level === 'error' ? 'text-red-200' : 'text-neutral-300'}>
-                                        {log.msg}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
+            <div className="bg-vybe-black border-2 border-vybe-darkgray p-6 shadow-[8px_8px_0px_0px_#444444]">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><AlertTriangle className="w-5 h-5" /> Error Rate (%)</h3>
+              <div className="h-48">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={data}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444444" />
+                    <XAxis dataKey="time" hide />
+                    <YAxis stroke="#e5e5e5" />
+                    <Tooltip contentStyle={{backgroundColor: '#1a1d23', border: '2px solid #ef4444'}} />
+                    <Line type="step" dataKey="errors" stroke="#ef4444" strokeWidth={3} dot={false} isAnimationActive={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
+          </div>
+
+          {/* Sidebar Controls & Logs */}
+          <div className="space-y-6">
+            <div className="bg-vybe-black border-2 border-[#ef4444] p-6 shadow-[8px_8px_0px_0px_#ef4444]">
+              <h3 className="text-xl font-bold mb-4 text-[#ef4444] flex items-center gap-2"><Terminal className="w-5 h-5" /> Chaos Controls</h3>
+              <p className="text-sm text-vybe-light/70 mb-6">Inject failures to test system resilience and auto-recovery.</p>
+              
+              <div className="space-y-4">
+                <button onClick={triggerSpike} className="w-full bg-vybe-primary/10 border-2 border-vybe-primary text-vybe-primary py-3 font-bold hover:bg-vybe-primary hover:text-vybe-black transition-colors flex items-center justify-center gap-2">
+                  <Cpu className="w-5 h-5" /> SPIKE TRAFFIC (10X)
+                </button>
+                <button onClick={killDB} className="w-full bg-[#ef4444]/10 border-2 border-[#ef4444] text-[#ef4444] py-3 font-bold hover:bg-[#ef4444] hover:text-vybe-light transition-colors flex items-center justify-center gap-2">
+                  <Database className="w-5 h-5" /> KILL DATABASE
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-vybe-black border-2 border-vybe-darkgray p-6 shadow-[8px_8px_0px_0px_#444444] h-[400px] flex flex-col">
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Terminal className="w-5 h-5" /> Incident Log</h3>
+              <div className="flex-1 bg-[#111] border-2 border-vybe-darkgray p-4 overflow-y-auto font-mono text-xs space-y-2">
+                {logs.map((log, i) => (
+                  <div key={i} className={
+                    log.includes('ERROR') ? 'text-[#ef4444]' : 
+                    log.includes('WARN') ? 'text-vybe-primary' : 
+                    'text-vybe-accent'
+                  }>
+                    {log}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
         </div>
-
       </div>
-    </div>
+    </main>
   );
 }
