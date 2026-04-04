@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from peewee import BigAutoField, CharField, DateTimeField
 
-from backend.app.config import BaseModel
+from backend.app.config.database import BaseModel
 
 
 def utcnow():

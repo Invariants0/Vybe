@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from peewee import BigAutoField, CharField, DateTimeField, ForeignKeyField, TextField
 
-from backend.app.database import BaseModel
+from backend.app.config.database import BaseModel
 from backend.app.models.url_model import ShortURL
 from backend.app.models.user_model import User
 

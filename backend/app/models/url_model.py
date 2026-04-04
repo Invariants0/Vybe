@@ -10,7 +10,7 @@ from peewee import (
     TextField,
 )
 
-from backend.app.database import BaseModel
+from backend.app.config.database import BaseModel
 from backend.app.models.user_model import User
 
 
