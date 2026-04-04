@@ -1,0 +1,40 @@
+/* Critical CSS - Inline above-the-fold styles */
+.font-heading {
+  font-family: Arial, sans-serif;
+  font-weight: 800;
+}
+
+.font-body {
+  font-family: Arial, sans-serif;
+}
+
+.bg-vybe-primary {
+  background-color: #87ceeb;
+}
+
+.bg-vybe-light {
+  background-color: #f7f9fa;
+}
+
+.bg-vybe-black {
+  background-color: #333333;
+}
+
+.text-vybe-black {
+  color: #333333;
+}
+
+.border-vybe-black {
+  border-color: #333333;
+}
+
+/* Prevent layout shift */
+h1 {
+  min-height: 200px;
+}
+
+@media (min-width: 768px) {
+  h1 {
+    min-height: 280px;
+  }
+}
