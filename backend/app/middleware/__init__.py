@@ -29,13 +29,15 @@ def register_middleware(app):
 
     @app.after_request
     def _log_response(response):
-        duration_ms = round((time.perf_counter() - g.request_started_at) * 1000, 2)
-        response.headers["X-Request-Id"] = g.request_id
-        app.logger.info(
-            "%s %s -> %s (%sms)",
-            request.method,
-            request.path,
-            response.status_code,
-            duration_ms,
-        )
+        # Only log if request_started_at was set (may not be in some test scenarios)
+        if hasattr(g, 'request_started_at'):
+            duration_ms = round((time.perf_counter() - g.request_started_at) * 1000, 2)
+            response.headers["X-Request-Id"] = g.request_id
+            app.logger.info(
+                "%s %s -> %s (%sms)",
+                request.method,
+                request.path,
+                response.status_code,
+                duration_ms,
+            )
         return response
