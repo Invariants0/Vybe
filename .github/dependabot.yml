@@ -1,0 +1,74 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    groups:
+      flask:
+        patterns:
+          - "flask*"
+          - "gunicorn"
+      database:
+        patterns:
+          - "peewee"
+          - "psycopg2*"
+      testing:
+        patterns:
+          - "pytest*"
+          - "testcontainers*"
+      monitoring:
+        patterns:
+          - "prometheus*"
+          - "sentry*"
+    ignore:
+      - dependency-name: "flask"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "peewee"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    groups:
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "next"
+      ui:
+        patterns:
+          - "lucide-react"
+          - "recharts"
+          - "class-variance-authority"
+          - "clsx"
+          - "tailwind-merge"
+      dev-tools:
+        patterns:
+          - "@biomejs/*"
+          - "typescript"
+          - "@types/*"
+    ignore:
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "docker"
+    directory: "/infra/docker"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
