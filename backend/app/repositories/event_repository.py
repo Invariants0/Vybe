@@ -15,7 +15,7 @@ class EventRepository(BaseRepository[Event]):
             Event.select(Event, ShortURL, User)
             .join(ShortURL, on=(Event.url_id == ShortURL.id))
             .switch(Event)
-            .join(User, on=(Event.user_id == User.id), join_type="LEFT")
+            .join(User, on=(Event.user_id == User.id), join_type="LEFT OUTER")
             .where(Event.url_id == url_id)
             .order_by(Event.id)
             .offset(skip)
@@ -32,7 +32,7 @@ class EventRepository(BaseRepository[Event]):
             Event.select(Event, ShortURL, User)
             .join(ShortURL, on=(Event.url_id == ShortURL.id))
             .switch(Event)
-            .join(User, on=(Event.user_id == User.id), join_type="LEFT")
+            .join(User, on=(Event.user_id == User.id), join_type="LEFT OUTER")
         )
         if order_by is not None:
             query = query.order_by(order_by)
