@@ -1,0 +1,10 @@
+[project]
+name = "vybe-workspace"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "mlh-pe-hackathon",
+]
+
+[tool.uv.sources]
+mlh-pe-hackathon = { path = "backend", editable = true }

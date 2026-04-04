@@ -6,12 +6,16 @@ ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
 
-COPY pyproject.toml README.md ./
-COPY app ./app
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends build-essential libpq-dev \
+	&& rm -rf /var/lib/apt/lists/*
+
+COPY backend ./backend
+COPY README.md ./README.md
 COPY run.py ./run.py
 COPY scripts ./scripts
 
-RUN pip install --upgrade pip && pip install .
+RUN pip install --upgrade pip && pip install ./backend
 
 EXPOSE 5000
 
