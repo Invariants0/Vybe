@@ -2,6 +2,8 @@
 
 Production-oriented URL shortener built on the existing Flask + Peewee + PostgreSQL stack.
 
+[![Quest Tracker Auto-Update](https://github.com/Invariants0/Vybe/actions/workflows/update-quest-tracker.yml/badge.svg)](https://github.com/YOUR_USERNAME/vybe/actions/workflows/update-quest-tracker.yml)
+
 ## Stack
 
 - Flask 3
