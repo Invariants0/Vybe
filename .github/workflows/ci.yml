@@ -220,6 +220,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup environment variables
+        run: cp backend/.env.example backend/.env
+
       - name: Start services
         run: docker compose up -d --build
 
