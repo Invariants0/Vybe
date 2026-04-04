@@ -13,15 +13,16 @@ Production-oriented URL shortener built on the existing Flask + Peewee + Postgre
 ## Folder structure
 
 ```text
-app/
-  config.py
-  database.py
-  errors.py
-  middleware/
-  models/
-  routes/
-  services/
-  utils/
+backend/
+  app/
+    config.py
+    database.py
+    errors.py
+    middleware/
+    models/
+    routes/
+    services/
+    utils/
 docs/
   api.md
 infra/
@@ -88,7 +89,7 @@ Detailed examples: [docs/api.md](docs/api.md)
 Build and run with compose:
 
 ```powershell
-docker compose -f infra/docker/docker-compose.yml up --build
+docker compose up --build
 ```
 
 Nginx will expose the service on `http://localhost:8080`.
