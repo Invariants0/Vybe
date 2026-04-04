@@ -2,7 +2,7 @@ from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 from peewee import DoesNotExist, IntegrityError
 
-from backend.app.database import BaseModel
+from backend.app.config.database import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
 
