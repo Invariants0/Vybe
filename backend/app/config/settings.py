@@ -23,6 +23,10 @@ class BaseConfig:
     AUTO_CREATE_TABLES = os.getenv("AUTO_CREATE_TABLES", "false").lower() == "true"
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
     BASE_URL = os.getenv("BASE_URL", "http://localhost:5000").rstrip("/")
+    REDIS_ENABLED = os.getenv("REDIS_ENABLED", "false").lower() == "true"
+    REDIS_URL = os.getenv("REDIS_URL", "")
+    REDIS_DEFAULT_TTL_SECONDS = int(os.getenv("REDIS_DEFAULT_TTL_SECONDS", 300))
+    EVENT_LOG_SAMPLE_RATE = float(os.getenv("EVENT_LOG_SAMPLE_RATE", 1.0))
 
 
 class DevelopmentConfig(BaseConfig):
