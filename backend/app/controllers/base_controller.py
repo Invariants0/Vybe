@@ -22,6 +22,21 @@ class BaseController:
                 scope.set_tag("operation", operation_name)
                 sentry_sdk.capture_exception(error)
 
+        # Pydantic validation error - check first before string comparison
+        if hasattr(error, "errors"):
+            # Convert Pydantic errors to JSON-serializable format
+            details = []
+            for err in error.errors():
+                detail = {
+                    "loc": list(err.get("loc", [])),
+                    "msg": err.get("msg", ""),
+                    "type": err.get("type", "")
+                }
+                if "input" in err:
+                    detail["input"] = str(err["input"])
+                details.append(detail)
+            return jsonify({"error": "validation_error", "message": msg, "details": details}), 422
+
         # We'll map some known exceptions to nice JSON responses
         if error_type == "ValidationError":
             return jsonify({"error": "validation_error", "message": msg}), 422
@@ -29,10 +44,6 @@ class BaseController:
             return jsonify({"error": "conflict", "message": msg}), 409
         elif error_type == "NotFoundError" or error_type == "ValueError":
             return jsonify({"error": "not_found", "message": msg}), 404
-        
-        # Pydantic validation error string mapping
-        if hasattr(error, "errors"):
-            return jsonify({"error": "validation_error", "message": "Invalid schema data", "details": error.errors()}), 422
 
         logging.exception(f"Unexpected error in {operation_name}: {error}")
-        return jsonify({"error": "internal_error", "message": "An unexpected error occurred"}), 500
+        return jsonify({"status": "error", "message": "An internal server error occurred."}), 500
