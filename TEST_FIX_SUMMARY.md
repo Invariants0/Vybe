@@ -59,12 +59,13 @@ Successfully fixed all failing tests and increased code coverage from 87% to 90%
 - Added conditional check in middleware to only log if `request_started_at` exists
 - Prevents AttributeError in test scenarios
 
-### 9. Unit Test Database Conflicts
-**Problem**: Unit tests tried to use PostgreSQL database from integration fixtures.
+### 9. Test Database Configuration
+**Problem**: Unit tests were using in-memory SQLite instead of PostgreSQL.
 **Solution**:
-- Created `tests/unit/conftest.py` with no-op `clean_database` fixture
-- Unit tests now properly isolated with mocks
-- Integration tests use PostgreSQL testcontainers
+- Removed in-memory SQLite fixtures from unit tests
+- All tests now use PostgreSQL testcontainers from parent conftest
+- Ensures production parity across all test types
+- Consistent database behavior in all tests
 
 ## New Tests Added
 
