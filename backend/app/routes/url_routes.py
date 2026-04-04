@@ -6,7 +6,9 @@ from backend.app.services.url_service import UrlService
 urls_bp = Blueprint("urls_bp", __name__, url_prefix="/urls")
 
 def get_controller():
-    return UrlController(UrlService(current_app.config))
+    controller = UrlController(UrlService(current_app.config))
+    controller.set_config(current_app.config)
+    return controller
 
 
 @urls_bp.post("")

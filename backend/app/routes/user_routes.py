@@ -6,7 +6,9 @@ from backend.app.services.user_service import UserService
 users_bp = Blueprint("users_bp", __name__, url_prefix="/users")
 
 def get_controller():
-    return UserController(UserService(current_app.config))
+    controller = UserController(UserService(current_app.config))
+    controller.set_config(current_app.config)
+    return controller
 
 @users_bp.post("")
 def create_user():
