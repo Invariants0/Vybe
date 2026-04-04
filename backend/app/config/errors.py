@@ -1,4 +1,5 @@
 from flask import jsonify
+from werkzeug.exceptions import BadRequest
 
 
 class AppError(Exception):
@@ -29,6 +30,11 @@ class ConflictError(AppError):
 
 
 def register_error_handlers(app):
+    @app.errorhandler(BadRequest)
+    def _handle_bad_request(error):
+        """Handle malformed JSON and other bad requests."""
+        return jsonify({"error": "bad_request", "message": str(error)}), 400
+
     @app.errorhandler(AppError)
     def _handle_app_error(error):
         response = {
@@ -51,4 +57,4 @@ def register_error_handlers(app):
     @app.errorhandler(Exception)
     def _handle_unexpected_error(error):
         app.logger.exception("Unhandled exception: %s", error)
-        return jsonify(error="internal_server_error", message="An unexpected error occurred."), 500
+        return jsonify(status="error", message="An internal server error occurred."), 500
