@@ -85,12 +85,28 @@ def cache_set(key: str, value: str, ttl_seconds: int, config: Optional[dict[str,
 
 
 def cache_delete(key: str, config: Optional[dict[str, Any]] = None) -> bool:
+    """Delete a cache key. Supports wildcard patterns (e.g., 'urls:list:*')."""
     client = get_client(config)
     if not client:
         return False
     try:
-        client.delete(key)
-        return True
+        # If key contains wildcard, use SCAN to find and delete matching keys
+        if "*" in key:
+            cursor = 0
+            deleted_count = 0
+            while True:
+                cursor, matched_keys = client.scan(cursor, match=key)
+                if matched_keys:
+                    client.delete(*matched_keys)
+                    deleted_count += len(matched_keys)
+                if cursor == 0:
+                    break
+            logger.debug("Deleted %d keys matching pattern %s", deleted_count, key)
+            return True
+        else:
+            # Standard delete for non-wildcard keys
+            client.delete(key)
+            return True
     except Exception as e:
         logger.error("Redis DELETE failed for key=%s: %s", key, e)
         return False
