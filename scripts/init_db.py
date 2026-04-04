@@ -1,5 +1,5 @@
-from app import create_app
-from app.database import create_tables
+from backend.app import create_app
+from backend.app.config import create_tables
 
 app = create_app()
 
