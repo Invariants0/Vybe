@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, jsonify, request
 
-from backend.app.errors import ValidationError
+from backend.app.config import ValidationError
 from backend.app.services.url_shortener import URLShortenerService
 
 api_bp = Blueprint("api", __name__)
