@@ -1,6 +1,5 @@
-import os
-
-from peewee import DatabaseProxy, Model, PostgresqlDatabase
+from peewee import DatabaseProxy, Model
+from playhouse.pool import PooledPostgresqlDatabase
 
 db = DatabaseProxy()
 
@@ -11,12 +10,15 @@ class BaseModel(Model):
 
 
 def init_db(app):
-    database = PostgresqlDatabase(
-        os.environ.get("DATABASE_NAME", "hackathon_db"),
-        host=os.environ.get("DATABASE_HOST", "localhost"),
-        port=int(os.environ.get("DATABASE_PORT", 5432)),
-        user=os.environ.get("DATABASE_USER", "postgres"),
-        password=os.environ.get("DATABASE_PASSWORD", "postgres"),
+    database = PooledPostgresqlDatabase(
+        app.config["DATABASE_NAME"],
+        host=app.config["DATABASE_HOST"],
+        port=app.config["DATABASE_PORT"],
+        user=app.config["DATABASE_USER"],
+        password=app.config["DATABASE_PASSWORD"],
+        max_connections=app.config["DB_MAX_CONNECTIONS"],
+        stale_timeout=app.config["DB_STALE_TIMEOUT_SECONDS"],
+        timeout=app.config["DB_CONNECTION_TIMEOUT_SECONDS"],
     )
     db.initialize(database)
 
@@ -24,7 +26,21 @@ def init_db(app):
     def _db_connect():
         db.connect(reuse_if_open=True)
 
-    @app.teardown_appcontext
-    def _db_close(exc):
+    @app.teardown_request
+    def _db_close(_exc):
         if not db.is_closed():
             db.close()
+
+
+def create_tables(safe=True):
+    from app.models import LinkVisit, ShortURL
+
+    if db.is_closed():
+        db.connect(reuse_if_open=True)
+    db.create_tables([ShortURL, LinkVisit], safe=safe)
+
+
+def ping_db():
+    if db.is_closed():
+        db.connect(reuse_if_open=True)
+    db.execute_sql("SELECT 1")
