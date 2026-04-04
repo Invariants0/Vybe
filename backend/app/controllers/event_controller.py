@@ -30,8 +30,9 @@ class EventController(BaseController):
             events = self.event_service.list_events(url_id=url_id, page=page, per_page=per_page)
             result = [self.event_service.serialize_event(e) for e in events]
             
-            # Store in cache for 5 minutes
-            cache_set(cache_key, json.dumps(result), 300, self.config)
+            # Short TTL (30s) — events are append-only and high-volume,
+            # long TTLs just mean stale analytics data.
+            cache_set(cache_key, json.dumps(result), 30, self.config)
             
             return self.handle_success(result)
         except Exception as e:

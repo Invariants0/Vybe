@@ -28,8 +28,11 @@ class UrlController(BaseController):
                 title=schema.title
             )
             
-            # Invalidate list cache on create
-            cache_delete(f"urls:list:*", self.config)
+            # NOTE: We intentionally do NOT call cache_delete("urls:list:*") here.
+            # At 500 VUs, 5% write traffic means ~25 creates/sec, each wiping
+            # all list caches via an O(N) Redis SCAN. The 15% list-read traffic
+            # then perpetually misses cache, hammering Postgres instead.
+            # List caches use a short TTL (30s) for natural expiry — see list_urls.
             
             return self.handle_success({
                 "id": url.id,
@@ -72,8 +75,11 @@ class UrlController(BaseController):
                 for u in urls
             ]
             
-            # Store in cache for 5 minutes (300 seconds)
-            cache_set(cache_key, json.dumps(result), 300, self.config)
+            # Short TTL (30s) for list caches.  At high write rates, wildcard
+            # cache invalidation causes thrashing (writes nuke the cache faster
+            # than reads can benefit from it).  A 30s eventual-consistency window
+            # is acceptable and keeps list reads off Postgres.
+            cache_set(cache_key, json.dumps(result), 30, self.config)
             
             return self.handle_success(result)
         except Exception as e:
@@ -121,9 +127,10 @@ class UrlController(BaseController):
             if not url:
                 raise ValueError("URL not found")
             
-            # Invalidate specific URL cache and list caches
+            # Invalidate only the exact key for this URL.
+            # The service layer already handles shorturl:<code> eviction.
+            # We do NOT scan-delete urls:list:* — see create_url comment.
             cache_delete(f"url:{url_id}", self.config)
-            cache_delete(f"urls:list:*", self.config)
             
             return self.handle_success({
                 "id": url.id,

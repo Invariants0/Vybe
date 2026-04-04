@@ -49,6 +49,7 @@ def get_client(config: Optional[dict[str, Any]] = None) -> Optional["redis.Redis
             decode_responses=True,
             socket_timeout=0.5,
             socket_connect_timeout=0.5,
+            max_connections=16,  # 8 threads per worker + headroom
         )
         # Eagerly PING to catch misconfiguration at startup rather than silently
         # swallowing it on the first real request.
@@ -90,8 +91,6 @@ def cache_delete(key: str, config: Optional[dict[str, Any]] = None) -> bool:
     if not client:
         return False
     try:
-        # If key contains wildcard, use SCAN to find and delete matching keys
-        # If key contains wildcard, optimize deletion to avoid massive thread blocking (the O(N) SCAN issue)
         if "*" in key:
             # For massive datasets, keys() is discouraged, but scan with default count=10 causes
             # thousands of blocking network round-trips to Redis, freezing Gunicorn workers.

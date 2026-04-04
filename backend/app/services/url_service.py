@@ -1,5 +1,6 @@
 import json
 import logging
+from collections import namedtuple
 from typing import Any, Dict, List, Optional
 import random
 
@@ -15,6 +16,12 @@ from backend.app.repositories.user_repository import UserRepository
 from backend.app.repositories.event_repository import EventRepository
 
 logger = logging.getLogger(__name__)
+
+# Lightweight struct used on cache-hit path instead of creating a new class
+# on every request (which allocates a Python type object + __dict__ descriptor
+# per call — measurable GC pressure at thousands of req/s).
+_UidProxy = namedtuple("_UidProxy", ["id"])
+_CachedURL = namedtuple("_CachedURL", ["id", "short_code", "original_url", "user_id"])
 
 
 class UrlService:
@@ -97,7 +104,7 @@ class UrlService:
 
         Cache path (happy path):
             - Deserialise the JSON blob stored by _cache_short_url.
-            - Build a minimal data-class from the cached fields so the event
+            - Build a lightweight namedtuple from the cached fields so the event
               logger never has to touch Postgres on a cache hit.
             - Log the event, then return the URL.
 
@@ -110,22 +117,12 @@ class UrlService:
             try:
                 data = json.loads(cached_raw)
 
-                # Use an explicit __init__ to avoid Python class-body scoping
-                # issues where class-level attributes bind at definition time
-                # (all instances would share the same captured values).
-                class _CachedURL:
-                    def __init__(self, id_: int, code: str, url: str, uid: Optional[int]):
-                        self.id = id_
-                        self.short_code = code
-                        self.original_url = url
-                        # Mirror the Peewee FK shape that log_event expects
-                        self.user_id = type("_UID", (), {"id": uid})() if uid else None
-
+                uid = data.get("user_id")
                 cached_url_obj = _CachedURL(
-                    id_=data["id"],
-                    code=short_code,
-                    url=data["original_url"],
-                    uid=data.get("user_id"),
+                    id=data["id"],
+                    short_code=short_code,
+                    original_url=data["original_url"],
+                    user_id=_UidProxy(id=uid) if uid else None,
                 )
                 self._maybe_log_event(cached_url_obj)  # type: ignore[arg-type]
                 return cached_url_obj.original_url

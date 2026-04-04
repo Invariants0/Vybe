@@ -28,8 +28,7 @@ class UserController(BaseController):
                 email=schema.email
             )
             
-            # Invalidate list cache on create
-            cache_delete(f"users:list:*", self.config)
+            # No wildcard cache nuke — list caches use short TTL for natural expiry
             
             return self.handle_success({
                 "id": user.id,
@@ -73,8 +72,8 @@ class UserController(BaseController):
                 for u in users
             ]
             
-            # Store in cache for 5 minutes
-            cache_set(cache_key, json.dumps(result), 300, self.config)
+            # Short TTL (30s) for list caches — same rationale as URL list
+            cache_set(cache_key, json.dumps(result), 30, self.config)
             
             return self.handle_success(result)
         except Exception as e:
@@ -118,9 +117,8 @@ class UserController(BaseController):
             if not user:
                 raise ValueError("User not found")
             
-            # Invalidate specific user cache and list caches
+            # Invalidate only the exact key for this user
             cache_delete(f"user:{user_id}", self.config)
-            cache_delete(f"users:list:*", self.config)
                 
             return self.handle_success({
                 "id": user.id,

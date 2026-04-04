@@ -5,10 +5,16 @@ from backend.app.services.user_service import UserService
 
 users_bp = Blueprint("users_bp", __name__, url_prefix="/users")
 
+
 def get_controller():
-    controller = UserController(UserService(current_app.config))
-    controller.set_config(current_app.config)
-    return controller
+    app = current_app._get_current_object()
+    ctrl = getattr(app, "_user_controller", None)
+    if ctrl is None:
+        ctrl = UserController(UserService(app.config))
+        ctrl.set_config(app.config)
+        app._user_controller = ctrl
+    return ctrl
+
 
 @users_bp.post("")
 def create_user():

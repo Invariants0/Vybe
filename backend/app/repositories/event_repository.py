@@ -10,7 +10,35 @@ class EventRepository(BaseRepository[Event]):
         super().__init__(Event)
 
     def list_for_url(self, url_id: int, skip: int = 0, limit: int = 100) -> List[Event]:
-        return self.get_all(skip=skip, limit=limit, order_by=Event.id, url_id=url_id)
+        """List events for a URL with prefetched FKs to avoid N+1 queries."""
+        return list(
+            Event.select(Event, ShortURL, User)
+            .join(ShortURL, on=(Event.url_id == ShortURL.id))
+            .switch(Event)
+            .join(User, on=(Event.user_id == User.id), join_type="LEFT")
+            .where(Event.url_id == url_id)
+            .order_by(Event.id)
+            .offset(skip)
+            .limit(limit)
+        )
+
+    def get_all(self, skip: int = 0, limit: int = 100, order_by=None, **filters) -> List[Event]:
+        """Override base get_all to prefetch FKs and avoid N+1 queries.
+
+        Without the JOINs, serializing 50 events triggers 100 extra SELECTs
+        (one for each event.url_id.id and event.user_id.id Peewee lazy-load).
+        """
+        query = (
+            Event.select(Event, ShortURL, User)
+            .join(ShortURL, on=(Event.url_id == ShortURL.id))
+            .switch(Event)
+            .join(User, on=(Event.user_id == User.id), join_type="LEFT")
+        )
+        if order_by is not None:
+            query = query.order_by(order_by)
+        for key, value in filters.items():
+            query = query.where(getattr(Event, key) == value)
+        return list(query.offset(skip).limit(limit))
 
     def log_event(self, url: ShortURL, event_type: str, user: User | None = None) -> Event:
         """Create an event with a JSON payload based on the URL."""
