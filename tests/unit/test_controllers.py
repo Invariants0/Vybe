@@ -17,11 +17,12 @@ from backend.app.controllers.user_controller import UserController
 from backend.app.validators.schemas import CreateUserSchema
 
 
-def _request(payload=None, *, args=None, headers=None, files=None, bad_json=False):
+def _request(payload=None, *, args=None, headers=None, files=None, bad_json=False, content_type="application/json"):
     req = MagicMock()
     req.args = MultiDict(args or {})
     req.headers = headers or {}
     req.files = files or {}
+    req.content_type = content_type
     if bad_json:
         req.get_json.side_effect = BadRequest("malformed json")
     else:

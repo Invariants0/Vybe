@@ -16,7 +16,7 @@ class UrlController(BaseController):
 
     def create_url(self, request):
         try:
-            err = self.require_json()
+            err = self.require_json(request)
             if err:
                 return err
 

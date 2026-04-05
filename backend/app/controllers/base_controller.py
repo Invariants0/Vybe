@@ -1,4 +1,4 @@
-from flask import current_app, g, jsonify, request
+from flask import current_app, g, jsonify
 
 try:
     import sentry_sdk
@@ -12,9 +12,9 @@ class BaseController:
     def handle_success(self, data, status_code=200):
         return jsonify(data), status_code
 
-    def require_json(self):
+    def require_json(self, request):
         """Return a 415 response tuple if Content-Type is not application/json, else None."""
-        content_type = request.content_type or ""
+        content_type = getattr(request, "content_type", None) or ""
         if "application/json" not in content_type:
             return jsonify(
                 {
@@ -23,6 +23,7 @@ class BaseController:
                 }
             ), 415
         return None
+
 
     def handle_error(self, error, operation_name):
         error_type = type(error).__name__
