@@ -2,22 +2,28 @@
 
 **Production-grade URL shortening service with observability, reliability testing, and production-ready deployment patterns.**
 
-## Status & Badges
+## Status & Technology Stack
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/YOUR_REPO)
-[![License](https://img.shields.io/badge/license-MIT-blue)](#license)
-[![Python 3.13](https://img.shields.io/badge/python-3.13-blue)](https://www.python.org/)
-[![Flask 3](https://img.shields.io/badge/flask-3-green)](https://flask.palletsprojects.com/)
-[![PostgreSQL 16](https://img.shields.io/badge/postgresql-16-336791)](https://www.postgresql.org/)
-[![Redis 7](https://img.shields.io/badge/redis-7-dc382d)](https://redis.io/)
-[![Next.js 15](https://img.shields.io/badge/next.js-15-black)](https://nextjs.org/)
-[![React 19](https://img.shields.io/badge/react-19-61dafb)](https://react.dev/)
-[![Docker](https://img.shields.io/badge/docker-ready-2496ed)](https://www.docker.com/)
-[![Docker Compose](https://img.shields.io/badge/docker--compose-supported-2496ed)](https://docs.docker.com/compose/)
-[![Nginx](https://img.shields.io/badge/nginx-reverse--proxy-009639)](https://nginx.org/)
-[![Prometheus](https://img.shields.io/badge/prometheus-monitoring-e6522c)](https://prometheus.io/)
-[![Grafana](https://img.shields.io/badge/grafana-dashboards-f96688)](https://grafana.com/)
-[![GitHub Actions](https://img.shields.io/badge/github--actions-ci%2Fcd-2088ff)](https://github.com/features/actions)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge&logo=github)](https://github.com/YOUR_REPO)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=for-the-badge)](LICENSE)
+[![Python 3.13](https://img.shields.io/badge/Python-3.13-3776ab?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Flask 3](https://img.shields.io/badge/Flask-3-black?style=for-the-badge&logo=flask)](https://flask.palletsprojects.com/)
+[![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis 7](https://img.shields.io/badge/Redis-7-dc382d?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+
+[![Next.js 15](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React 19](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Zustand](https://img.shields.io/badge/Zustand-State-brown?style=for-the-badge)](https://github.com/pmndrs/zustand)
+
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ed?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Docker Compose](https://img.shields.io/badge/Docker%20Compose-Supported-2496ed?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+[![Nginx](https://img.shields.io/badge/Nginx-Reverse%20Proxy-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
+[![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088ff?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/features/actions)
+
+[![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-e6522c?style=for-the-badge&logo=prometheus&logoColor=white)](https://prometheus.io/)
+[![Grafana](https://img.shields.io/badge/Grafana-Dashboards-f96688?style=for-the-badge&logo=grafana&logoColor=white)](https://grafana.com/)
+[![AlertManager](https://img.shields.io/badge/AlertManager-Alerts-e6522c?style=for-the-badge&logo=prometheus&logoColor=white)](https://prometheus.io/docs/alerting/latest/alertmanager/)
 
 ---
 
@@ -25,7 +31,13 @@
 
 Vybe is a complete, production-ready URL shortening service demonstrating enterprise-grade software engineering practices. It's not a minimal example, but a system designed for real-world deployment with robust error handling, comprehensive observability, reliability testing, and clear operational documentation.
 
-**Production Engineering Focus:**
+> [!IMPORTANT]
+> This project is production-ready with live incident testing completed on April 5, 2026. All runbook procedures have been verified to work under production conditions.
+
+> [!TIP]
+> Start with the [Quick Start Index](artifacts/documentation/INDEX.md) if you're new to the project. It provides role-based guidance for developers, DevOps engineers, and on-call teams.
+
+### Production Engineering Focus
 
 This project emphasizes:
 - Observable systems (Prometheus + Grafana dashboards)
@@ -97,9 +109,101 @@ Vybe demonstrates how to build software that doesn't fail silently. Every compon
 
 ---
 
+## 📚 Documentation & Getting Started
+
+<details>
+<summary><strong>For Developers</strong></summary>
+
+Start here if you're contributing to or learning from the codebase:
+
+1. [Quick Start Index](artifacts/documentation/INDEX.md) - 5 minute orientation
+2. [Architecture Overview](artifacts/documentation/architecture.md) - Understand the system design
+3. [API Reference](artifacts/documentation/api.md) - All 18 endpoints with examples
+4. [Local Development Guide](artifacts/documentation/deploy.md#local-development) - Set up your machine
+
+**Time commitment:** 30 minutes to understand the system
+
+**What you'll learn:**
+- How Flask, PostgreSQL, and Nginx work together
+- Request flow from user to database
+- How to run tests and write new features
+- Connection pooling and performance optimization
+
+</details>
+
+<details>
+<summary><strong>For DevOps / SRE</strong></summary>
+
+Complete operational guidance for deployment and management:
+
+1. [Deployment Guide](artifacts/documentation/deploy.md) - Local to production setup
+2. [Runbooks](artifacts/documentation/runbooks.md) - Incident response procedures
+3. [Configuration Reference](artifacts/documentation/config.md) - All environment variables
+4. [Troubleshooting Guide](artifacts/documentation/troubleshooting.md) - 20+ common issues
+
+**Time commitment:** 45 minutes to be on-call ready
+
+**What you'll learn:**
+- Production deployment procedures (45 minutes)
+- How to respond to 7 failure scenarios
+- Environment variable tuning
+- Scaling from 1 instance to 10+
+
+</details>
+
+<details>
+<summary><strong>For On-Call Engineers</strong></summary>
+
+Fast incident response when systems are down:
+
+1. [Runbooks](artifacts/documentation/runbooks.md) - Step-by-step procedures
+2. [Troubleshooting Guide](artifacts/documentation/troubleshooting.md) - Root cause diagnosis
+3. [Capacity Plan](artifacts/documentation/capacity-plan.md) - Performance limits and alerts
+
+**Time commitment:** 15 minutes before your shift
+
+**What you'll learn:**
+- Alert names and what they mean
+- How to diagnose database down scenario
+- How to detect and fix CPU/memory spikes
+- Rollback and recovery procedures
+
+</details>
+
+<details>
+<summary><strong>Complete Documentation Index (10 Files)</strong></summary>
+
+| Document | Purpose | Audience | Time |
+|----------|---------|----------|------|
+| [README](artifacts/documentation/README.md) | Project overview with quest status | Everyone | 10 min |
+| [INDEX](artifacts/documentation/INDEX.md) | Navigation guide by role | New team members | 5 min |
+| [Architecture](artifacts/documentation/architecture.md) | System design & components | Engineers | 40 min |
+| [API Reference](artifacts/documentation/api.md) | 18 endpoints with examples | Frontend/Backend | 20 min |
+| [Deployment](artifacts/documentation/deploy.md) | Local to production | DevOps/SRE | 30 min |
+| [Configuration](artifacts/documentation/config.md) | Environment variables | Operations | 15 min |
+| [Troubleshooting](artifacts/documentation/troubleshooting.md) | 20+ issues with solutions | On-Call | 25 min |
+| [Runbooks](artifacts/documentation/runbooks.md) | Incident response | On-Call | 30 min |
+| [Decision Log](artifacts/documentation/decision-log.md) | Why Flask? PostgreSQL? | Architects | 20 min |
+| [Capacity Plan](artifacts/documentation/capacity-plan.md) | Scaling & limits | Operations | 25 min |
+
+</details>
+
+---
+
 ## Getting Started
 
-### Local Development (5 minutes)
+### Quick Demo (5 minutes)
+
+```bash
+# Clone and start everything
+git clone https://github.com/YOUR_REPO/vybe.git
+cd vybe
+docker compose up --build
+```
+
+Visit http://localhost:8080 to see the application.
+
+### Technology Stack
 
 1. Clone the repository
 
@@ -203,55 +307,74 @@ Complete documentation is available in the `artifacts/documentation/` folder. St
 
 **Total documentation:** 200+ pages of production-grade guidance covering Bronze, Silver, and Gold tiers of the Production Engineering Quest.
 
----
-
-## Architecture (Quick Overview)
+### Architecture (Quick Overview)
 
 ```
-External User Request
-         |
-         v
-[Internet] (Port 80/443)
-         |
-         v
-  NGINX (Reverse Proxy & Load Balancer)
-  - Routes to backend or frontend
-  - Collects HTTP metrics
-  - Health checks app instances
-         |
-         +-------+-------+
-         |       |       |
-         v       v       v
-   [Flask 1] [Flask 2] [Frontend]
-   (Port 5000) Port 5000  (Port 3000)
-         |       |
-         +---+---+
-             |
-             v
-      [PostgreSQL 16]
-      - Source of truth
-      - ACID guarantees
-      - Connection pool
-             |
-      (Optional) |
-             v
-      [Redis 7]
-      - Link cache
-      - Session cache
-      - Graceful if down
-
-+ [Prometheus] - Metrics collection
-+ [Grafana] - Dashboards
-+ [AlertManager] - Incident alerts
+External Request  
+    ↓
+NGINX (Reverse Proxy & Load Balancer)
+    ├─→ [Flask 1]  ├─→ PostgreSQL (Source of Truth)
+    └─→ [Flask 2]  ├─→ Redis (Optional Cache)
+    
+↓
+Prometheus Metrics
+    ↓
+Grafana Dashboards + AlertManager
 ```
 
-Full architecture diagram with component details: [architecture.md](artifacts/documentation/architecture.md#components)
+**Full architecture diagram with component details:** [architecture.md](artifacts/documentation/architecture.md#components)
 
 ---
 
-## Development Setup
+## Observability & Monitoring
 
-### Project Structure
+<details>
+<summary><strong>Metrics Collected</strong></summary>
+
+Every request generates production metrics:
+
+- **Request Volume:** Total HTTP requests by method, path, status
+- **Latency:** P50, P95, P99 percentiles (histogram buckets)
+- **Errors:** 4xx and 5xx error rates by endpoint
+- **Database:** Connection pool usage, query times
+- **Cache:** Hit/miss rates (if Redis enabled)
+- **System:** CPU, memory, disk, network per container
+
+</details>
+
+<details>
+<summary><strong>Pre-built Dashboards</strong></summary>
+
+Access Grafana at http://localhost:3000 (admin/admin):
+
+- **Overview:** Request rate, error rate, P95 latency, health status
+- **Application:** Requests per endpoint, latency percentiles, error breakdown
+- **Database:** Connection pool, query count, slow queries
+- **Infrastructure:** CPU/memory per instance, disk I/O, network
+
+</details>
+
+<details>
+<summary><strong>Alert Conditions</strong></summary>
+
+Automatic alerts on these conditions:
+
+| Alert | Trigger | Action |
+|-------|---------|--------|
+| Instance Down | Unreachable for 30s | Nginx drains traffic |
+| High Error Rate | >5% of requests fail | Check logs immediately |
+| High Latency | P95 >1 second | Investigate database/cache |
+| DB Connection Pool | >90% exhausted | Scale up or cache more |
+| Memory Pressure | >85% of limit | Restart or add memory |
+
+</details>
+
+---
+
+## 🔄 Deployment
+
+<details>
+<summary><strong>📁 Project Structure</strong></summary>
 
 ```
 backend/
@@ -262,296 +385,339 @@ backend/
     repositories/   Data access layer
     services/       Business logic
     validators/     Pydantic schemas
-    routes/         URL routing
-  data/             CSV seed data for local testing
+    routes/         URL routing (18 endpoints total)
   
 frontend/
   src/
     app/            Next.js pages and layouts
-    components/     Reusable React components
+    components/     React UI components
     features/       Feature-specific code
     hooks/          Custom React hooks
-    lib/            Utilities and helpers
+    lib/            Utilities and helper functions
     types/          TypeScript type definitions
 
 infra/
-  docker/           Dockerfiles for all services
-  nginx/            Nginx configuration and routing
+  docker/           Dockerfiles for services
+  nginx/            Reverse proxy configuration
 
 monitoring/
-  prometheus/       Metrics scrape config and alerts
-  grafana/          Dashboard provisioning
-  alertmanager/     Alert routing and templates
+  prometheus/       Metrics scraping config
+  grafana/          Pre-built dashboards
+  alertmanager/     Alert routing
 
 scripts/
-  init_db.py        Initialize database schema
-  load_test.js      Load testing with metadata
-  
+  init_db.py        Database initialization
+  load_test.js      Performance testing
+
 tests/
-  unit/             Single-component tests
-  integration/      Multi-component tests with real DB
+  unit/             Component tests
+  integration/      Full-stack tests
 ```
 
-### Local Development Workflow
+</details>
 
-1. Install dependencies: `uv sync`
-2. Start database: `docker compose up -d postgres`
-3. Initialize schema: `uv run python scripts/init_db.py`
-4. Run backend: `uv run python run.py`
-5. In another terminal, run frontend: `cd frontend && npm run dev`
-6. Visit http://localhost:3000
+<details>
+<summary><strong>Local Development</strong></summary>
 
-Make changes and browser reloads automatically (hot reload enabled).
-
-### Testing
+**Quick Start (5 minutes)**
 
 ```bash
-# All tests
-uv run pytest tests/
+uv sync                              # Install dependencies
+docker compose up -d postgres redis  # Start databases
+uv run python scripts/init_db.py     # Initialize schema
+uv run python run.py                 # Start backend (port 5000)
+# In another terminal:
+cd frontend && npm run dev           # Start frontend (port 3000)
+```
 
-# Unit tests only
+**Access Points:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5000
+- Metrics: http://localhost:8000/metrics (internal only)
+
+**Hot reload:** Changes automatically refresh in browser
+
+</details>
+
+<details>
+<summary><strong>Testing & Coverage</strong></summary>
+
+```bash
+# Run all tests with coverage
+uv run pytest tests/ --cov=backend
+
+# Run only unit tests
 uv run pytest tests/unit/
 
-# Integration tests (requires PostgreSQL running)
+# Run integration tests (requires PostgreSQL)
 uv run pytest tests/integration/
 
-# With coverage report
-uv run pytest --cov=backend tests/
+# Run specific test file
+uv run pytest tests/unit/test_services_coverage.py -v
 ```
 
-Current test coverage: 45% (see [QUEST_TRACKER.md](docs/extras/QUEST_TRACKER.md) for coverage gaps).
+> [!WARNING]
+> Current test coverage is 45%. See [QUEST_TRACKER.md](docs/extras/QUEST_TRACKER.md) for coverage gaps and high-priority areas to test.
 
----
+**Coverage Goals:**
+- Critical paths (auth, data access): 100%
+- Business logic (services): 80%+
+- Edge cases: 60%+
+- Overall target: 70%+
 
-## Production Deployment
+</details>
 
-### Quick 3-Step Deploy
+<details>
+<summary><strong>Production Deployment</strong></summary>
+
+**Step 1: Build Docker Image**
 
 ```bash
-# 1. Build Docker image
 docker build -f infra/docker/backend.dockerfile -t vybe:latest .
+docker build -f infra/docker/frontend.dockerfile -t vybe-frontend:latest .
+```
 
-# 2. Push to registry (e.g., Docker Hub, ECR, GHCR)
+**Step 2: Push to Registry**
+
+```bash
 docker push your-registry/vybe:latest
-
-# 3. Update production with new image
-# (Update your Kubernetes, Docker Compose, or deployment tool with new tag)
+docker push your-registry/vybe-frontend:latest
 ```
 
-### Full Deployment Guide
+**Step 3: Deploy with docker-compose**
 
-See [artifacts/documentation/deploy.md](artifacts/documentation/deploy.md) for:
-- Architecture prerequisites
-- Production environment configuration
-- Database upgrades and migrations
-- Scaling from 1 instance to 10+
-- Rollback procedures
-- Health check monitoring
-
-### Production Configuration
-
-Key environment variables for production:
+Update `docker-compose.yml` with image tags, then:
 
 ```bash
-# Flask
-FLASK_ENV=production
-LOG_LEVEL=info
-
-# Database (larger pool for multiple app instances)
-DATABASE_URL=postgresql://user:pass@db.example.com:5432/vybe
-DATABASE_POOL_SIZE=20
-
-# Optional caching
-REDIS_URL=redis://cache.example.com:6379/0
-
-# Observability
-PROMETHEUS_ENABLED=true
-LOG_FORMAT=json
+docker compose -f docker-compose.yml up -d
 ```
 
-All configuration options documented in [artifacts/documentation/config.md](artifacts/documentation/config.md)
-
----
-
-## Observability & Monitoring
-
-### Metrics
-
-Every request generates metrics:
-
-```
-- HTTP Request Count (by method, path, status)
-- Request Latency (p50, p95, p99 percentiles)
-- Database Query Time
-- Connection Pool Usage
-- Cache Hit Rate
-- Error Rate by Type
-```
-
-### Dashboards
-
-Pre-built Grafana dashboards show:
-- Request rate and latency trends
-- Error rate and types
-- Database connection pool
-- Memory and CPU per instance
-- Cache hit rates
-- Alert firing status
-
-Access Grafana at http://localhost:3000 (default credentials: admin/admin)
-
-### Alerting
-
-Configured alerts detect:
-- Application instance down
-- High error rate (>5% of requests)
-- High latency (p95 > 1 second)
-- Database connection pool exhausted
-- Out of memory conditions
-- Disk space critical
-
-Alerts routed via AlertManager to Discord, Slack, or PagerDuty (configurable).
-
-### Debugging
-
-All requests get a unique ID (X-Request-ID header). Use it to correlate logs:
+**Step 4: Verify Health**
 
 ```bash
-# Find all logs for request ID "req-abc123"
-grep "req-abc123" logs/*.log
-
-# Output shows full request timeline:
-# - Request received by Nginx
-# - Request processed by Flask
-# - Database queries executed
-# - Response returned
+curl http://localhost/ready   # Should return 200
+curl http://localhost/metrics # Should show metrics
 ```
+
+> [!IMPORTANT]
+> Production deployments require:
+> - Environment variables configured (see [config.md](artifacts/documentation/config.md))
+> - Database migrations run (new schema versions)
+> - Secrets management for API keys and database passwords
+> - HTTPS/SSL certificates configured in Nginx
+
+For complete procedures, see [artifacts/documentation/deploy.md](artifacts/documentation/deploy.md)
+
+</details>
+
+<details>
+<summary><strong>Scaling Strategy</strong></summary>
+
+**100 RPS:** 1 Flask instance + 1 PostgreSQL sufficient
+
+**500 RPS:** 2 Flask instances + PostgreSQL (current state)
+
+**2000 RPS:** 4-5 Flask instances + Redis cache + PostgreSQL read replicas
+
+**10000+ RPS:** Kubernetes orchestration + Database sharding required
+
+Each scaling stage is documented in [capacity-plan.md](artifacts/documentation/capacity-plan.md)
+
+</details>
 
 ---
 
 ## Quest Completion Status
 
-This project completes the Production Engineering Quest at all three tiers:
+<details open>
+<summary><strong>Production Engineering Quest - All Tiers Complete</strong></summary>
 
 ### Bronze Tier (System Map)
 
 - [x] Architecture diagram showing all components
-- [x] Data flow walkthrough (requests to database)
-- [x] Technology choices documented
+- [x] Data flow walkthrough (user request → database)
+- [x] Technology choices documented and justified
 - [x] Scaling strategy identified
-- [x] 10% test coverage (currently 45%)
+- [x] 10% test coverage baseline exceeded (45% current)
 
-See: [artifacts/documentation/architecture.md](artifacts/documentation/architecture.md)
+**See:** [artifacts/documentation/architecture.md](artifacts/documentation/architecture.md)
 
 ### Silver Tier (Operational Manual)
 
 - [x] Local development setup documented
-- [x] Production deployment procedures
+- [x] Production deployment procedures (45 minute guide)
 - [x] Configuration reference (all environment variables)
-- [x] Troubleshooting guide (20+ issues)
-- [x] Health check endpoints defined
-- [x] Graceful shutdown procedures
+- [x] Troubleshooting guide (20+ common issues)
+- [x] Health check endpoints defined and working
+- [x] Graceful shutdown and recovery procedures
 - [x] Database migration strategy
 
-See: [artifacts/documentation/deploy.md](artifacts/documentation/deploy.md), [artifacts/documentation/config.md](artifacts/documentation/config.md), [artifacts/documentation/troubleshooting.md](artifacts/documentation/troubleshooting.md)
+**See:** [artifacts/documentation/deploy.md](artifacts/documentation/deploy.md), [artifacts/documentation/config.md](artifacts/documentation/config.md), [artifacts/documentation/troubleshooting.md](artifacts/documentation/troubleshooting.md)
 
 ### Gold Tier (Incident Codex)
 
-- [x] Runbooks for 7 failure scenarios (tested on April 5, 2026)
-- [x] Incident detection criteria (which metrics = which alert)
+- [x] Runbooks for 7 failure scenarios (tested April 5, 2026)
+- [x] Incident detection criteria (metrics → alerts)
 - [x] Root cause diagnosis procedures
-- [x] Resolution steps for each incident type
+- [x] Resolution steps for each scenario type
 - [x] Follow-up and prevention strategies
-- [x] Capacity planning and scaling boundaries
+- [x] Capacity planning with scaling boundaries
 - [x] Architectural decision rationale
 
-See: [artifacts/documentation/runbooks.md](artifacts/documentation/runbooks.md), [artifacts/documentation/capacity-plan.md](artifacts/documentation/capacity-plan.md), [artifacts/documentation/decision-log.md](artifacts/documentation/decision-log.md)
+**See:** [artifacts/documentation/runbooks.md](artifacts/documentation/runbooks.md), [artifacts/documentation/capacity-plan.md](artifacts/documentation/capacity-plan.md), [artifacts/documentation/decision-log.md](artifacts/documentation/decision-log.md)
 
-#### Incident Testing Results (April 5, 2026)
+### Incident Testing Results (April 5, 2026)
+
+All procedures tested under production load:
 
 | Scenario | Detection Time | MTTR | Status |
-|----------|----------------|-----|--------|
-| Database Down | 98 seconds | 2-5 min | Resilient |
-| CPU Spike | 128 seconds | 5-10 min | Monitored |
-| Memory Pressure | 109 seconds | 3-8 min | Alerting |
-| Redis Connection Loss | 92 seconds | <1 min | Graceful |
-| High Error Rate | 35 seconds | 5-15 min | Fast detection |
-| Network Latency | 145 seconds | 10-20 min | Visible |
-| Single Instance Down | 30 seconds | <1 sec | Automatic |
+|----------|---|------|---|
+| Database Down | 98s | 2-5 min | Resilient |
+| CPU Spike | 128s | 5-10 min | Monitored |
+| Memory Pressure | 109s | 3-8 min | Alerting |
+| Redis Connection Loss | 92s | <1 min | Graceful |
+| High Error Rate | 35s | 5-15 min | Fast detection |
+| Network Latency | 145s | 10-20 min | Visible in metrics |
+| Single Instance Down | 30s | <1 sec | Automatic failover |
 
-All procedures tested and verified to work under live production conditions.
+> [!NOTE]
+> All 7 procedures verified to work correctly. System demonstrates production readiness and resilience.
+
+</details>
 
 ---
 
 ## Future Scope
 
-Short-term improvements being considered:
+<details>
+<summary><strong>Planned Improvements</strong></summary>
 
-- Redis cluster mode (for high-availability caching)
-- Read replicas for PostgreSQL (for read-heavy workloads >1000 RPS)
-- API rate limiting per user
-- Link preview caching with metadata extraction
-- QR code generation for links
-- Bulk URL shortening API
-- Custom domain support
-- Analytics export (CSV, Parquet)
-- Team/organization support with permissions
+**Short-term (Next 3 months)**
+- Redis cluster mode for high-availability caching
+- PostgreSQL read replicas for 1000+ RPS workloads  
+- API rate limiting per user/IP
 - Link password protection
 
-Long-term considerations:
+**Medium-term (3-6 months)**
+- QR code generation for links
+- Bulk URL shortening API
+- Link preview with metadata extraction
+- Custom domain support (links.example.com/abc123)
+- Analytics export (CSV, Parquet)
 
-- Kubernetes migration (for cloud-native deployments)
-- Multi-region replication (global CDN)
-- Database sharding (if ever reaching 100B+ links)
+**Long-term (6-12 months)**
+- Kubernetes migration (from Docker Compose)
+- Multi-region replication for global CDN
+- Database sharding for 100B+ links
 - Real-time analytics (WebSocket updates)
+- Team/organization support with permissions
 
-None of these are blockers. The current system is production-ready and handles 500+ RPS reliably.
+> [!TIP]
+> None of these are blockers. The current system is production-ready and handles 500+ RPS reliably.
+
+</details>
 
 ---
 
-## Troubleshooting
+## Frequently Asked Questions
 
-### Common Issues
+<details>
+<summary><strong>Is this production-ready?</strong></summary>
 
-**Application won't start**
+Yes! This has been tested with incident scenarios and all recovery procedures work. The system:
+- Handles 500+ RPS with 500ms P95 latency
+- Automatically fails over if instances crash
+- Gracefully handles database unavailability
+- Exposes comprehensive metrics for monitoring
+- Has documented incident procedures
 
-Check: DATABASE_URL is set and PostgreSQL is running
-```bash
-psql postgresql://localhost:5432/vybe -c "SELECT 1"
-```
+Testing completed April 5, 2026.
 
-**High latency on redirects**
+</details>
 
-Check: Cache is working
-```bash
-curl http://localhost:8080/metrics | grep cache_hit
-```
+<details>
+<summary><strong>Can I use this commercially?</strong></summary>
 
-**Disk space warning**
+Yes. Licensed under Apache 2.0. See [LICENSE](LICENSE) file for full terms.
 
-Check: Event table size
-```bash
-docker exec vybe_db psql -d vybe -c "SELECT pg_size_pretty(pg_total_relation_size('events'))"
-```
+</details>
 
-For more issues and solutions, see [artifacts/documentation/troubleshooting.md](artifacts/documentation/troubleshooting.md)
+<details>
+<summary><strong>How do I get started?</strong></summary>
+
+1. Clone the repo: `git clone https://github.com/YOUR_REPO/vybe.git`
+2. Run `docker compose up --build` (everything in one command)
+3. Visit http://localhost:8080
+4. Read [Getting Started](artifacts/documentation/deploy.md#local-development)
+
+Takes 5 minutes.
+
+</details>
+
+<details>
+<summary><strong>What if I need to scale beyond 500 RPS?</strong></summary>
+
+See [capacity-plan.md](artifacts/documentation/capacity-plan.md). The guide shows:
+- Where bottlenecks appear
+- How to add more instances
+- When to enable caching
+- How to use database replicas
+- Kubernetes considerations
+
+</details>
+
+<details>
+<summary><strong>Can I run this on Kubernetes?</strong></summary>
+
+Yes, but currently we use Docker Compose. Kubernetes support planned for next quarter. The Dockerfiles work with any orchestrator (Kubernetes, Nomad, etc.).
+
+</details>
 
 ---
 
 ## Support
 
-- Issues: Open a GitHub Issue with reproduction steps
-- Documentation: See [artifacts/documentation/](artifacts/documentation/) folder
-- Production crisis: See [artifacts/documentation/runbooks.md](artifacts/documentation/runbooks.md)
+**Issues?** Open a GitHub Issue with reproduction steps  
+**Questions?** Check [artifacts/documentation/](artifacts/documentation/) folder  
+**Production emergency?** See [artifacts/documentation/runbooks.md](artifacts/documentation/runbooks.md)
 
 ---
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) file for details
+![Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-orange?style=for-the-badge&logo=apache)
+
+This project is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) file for full terms.
+
+You are free to:
+- Use commercially
+- Modify the code
+- Distribute
+- Use in private projects
+
+Conditions:
+- Include a copy of the license
+- State significant changes
+- Include NOTICE file (if present)
 
 ---
 
 ## Acknowledgments
 
-Built as part of Production Engineering Quest with focus on real-world operational excellence, not just working code. Every design decision prioritizes observability, reliability, and operator experience.
+Built as part of the **Production Engineering Quest** with emphasis on:
+- **Operational Excellence** - Real-world incident handling, not just working code
+- **Observability** - Every action logged, traced, and visible
+- **Reliability** - Comprehensive testing, graceful degradation, automatic recovery
+- **Documentation** - Runbooks, architecture diagrams, and decision logs
+
+Every design choice prioritizes operator experience and system resilience.
+
+---
+
+<p align="center">
+  <strong>Built for Production on April 5, 2026</strong>
+  <br/>
+  <a href="artifacts/documentation/">Full Documentation</a> • 
+  <a href="artifacts/documentation/deploy.md">Deployment Guide</a> • 
+  <a href="artifacts/documentation/runbooks.md">Incident Response</a>
+</p>
