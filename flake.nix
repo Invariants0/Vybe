@@ -16,23 +16,8 @@
       {
         devShells.default = pkgs.mkShell {
           packages = [
-            (python.withPackages (ps: with ps; [
-              email-validator
-              faker
-              flask
-              flask-limiter
-              gunicorn
-              peewee
-              prometheus-client
-              psycopg2
-              pydantic
-              python-dotenv
-              redis
-              sentry-sdk
-              pytest
-              pytest-cov
-              testcontainers
-            ]))
+            python
+            pkgs.uv
 
             # Frontend
             pkgs.nodejs_22

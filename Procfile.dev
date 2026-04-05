@@ -1,2 +1,2 @@
-backend: cd backend && python ../run.py
+backend: uv run python run.py
 frontend: cd frontend && pnpm install && pnpm dev
