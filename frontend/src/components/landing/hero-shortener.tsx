@@ -10,6 +10,7 @@ export function HeroShortener() {
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const handleShorten = async () => {
     if (!url.trim()) return;
@@ -22,6 +23,7 @@ export function HeroShortener() {
       setError(null);
       const link = await linksApi.create({ original_url: finalUrl, user_id: 1 });
       setResult(`${window.location.origin}/${link.short_code}`);
+      setCopied(false);
       setUrl('');
     } catch {
       setError('Failed to shorten URL');
@@ -115,12 +117,14 @@ export function HeroShortener() {
                 </a>
                 <button
                   type="button"
-                  className="px-3 py-1 text-sm font-bold border-2 border-vybe-black bg-vybe-gray hover:bg-vybe-accent transition-colors"
+                  className={`px-3 py-1 text-sm font-bold border-2 border-vybe-black transition-colors ${copied ? 'bg-vybe-accent' : 'bg-vybe-gray hover:bg-vybe-accent'}`}
                   onClick={() => {
                     navigator.clipboard.writeText(result);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
                   }}
                 >
-                  Copy
+                  {copied ? 'Copied!' : 'Copy'}
                 </button>
               </div>
             </div>
