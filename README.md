@@ -12,10 +12,12 @@ Get Vybe up and running in 30 seconds:
 
 ```bash
 git clone https://github.com/Invariants0/Vybe.git && cd Vybe
-docker compose up --build
+just dev-up
 ```
 
 > [!NOTE]  
+> Make sure you have [overmind](https://github.com/DarthSim/overmind) and [just](https://github.com/casey/just) installed
+> <br/>
 > Visit **[http://localhost](http://localhost)** to access the dashboard.  
 > **API Docs:** [http://localhost/api/v1/docs](http://localhost/api/v1/docs)  
 > **Monitoring:** Grafana at [http://localhost:3001](http://localhost:3001) (admin/admin)
