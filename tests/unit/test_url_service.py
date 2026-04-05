@@ -40,6 +40,7 @@ def test_create_url_success(service):
     mock_url.short_code = "abc123"
     mock_url.original_url = "https://google.com"
     mock_url.user_id_id = 1
+    mock_url.is_active = True
     url_repo.create.return_value = mock_url
     url_repo.find_by_code.return_value = None
 
@@ -87,13 +88,16 @@ def test_resolve_redirect_inactive(service):
     mock_url = MagicMock(spec=ShortURL)
     mock_url.id = 1
     mock_url.short_code = "xyz"
+    mock_url.original_url = "https://github.com"
     mock_url.is_active = False
+    mock_url.user_id_id = None
     url_repo.find_by_code.return_value = mock_url
 
     with patch("backend.app.services.url_service.cache_get", return_value=None):
-        result = svc.resolve_redirect("xyz")
+        with pytest.raises(Exception) as exc:
+            svc.resolve_redirect("xyz")
 
-    assert result is None
+    assert "deactivated" in str(exc.value).lower()
     event_repo.log_event.assert_not_called()
 
 
@@ -102,9 +106,10 @@ def test_resolve_redirect_not_found(service):
     url_repo.find_by_code.return_value = None
 
     with patch("backend.app.services.url_service.cache_get", return_value=None):
-        result = svc.resolve_redirect("missing")
+        with pytest.raises(Exception) as exc:
+            svc.resolve_redirect("missing")
 
-    assert result is None
+    assert "not found" in str(exc.value).lower()
     event_repo.log_event.assert_not_called()
 
 

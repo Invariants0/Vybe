@@ -15,7 +15,7 @@ COPY pyproject.toml ./
 
 RUN pip install --upgrade pip wheel && \
     pip wheel --no-cache-dir --wheel-dir /build/wheels \
-    flask gunicorn psycopg2-binary redis prometheus-client pydantic python-dotenv sentry-sdk[flask] peewee email-validator faker pytest pytest-cov testcontainers
+    flask flask-limiter gunicorn psycopg2-binary redis prometheus-client pydantic python-dotenv sentry-sdk[flask] peewee email-validator faker pytest pytest-cov testcontainers
 
 FROM python:3.13-slim
 
@@ -46,6 +46,8 @@ COPY run.py ./run.py
 COPY scripts ./scripts
 
 RUN chmod +x /app/scripts/docker-entrypoint.sh
+# Make entrypoint executable
+RUN sed -i 's/\r$//' /app/scripts/docker-entrypoint.sh && chmod +x /app/scripts/docker-entrypoint.sh
 
 # Switch to non-root user
 RUN chown -R appuser:appuser ${WORK_DIR}

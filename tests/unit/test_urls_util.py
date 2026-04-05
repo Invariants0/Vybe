@@ -47,6 +47,24 @@ class TestNormalizeUrl:
         result = normalize_url("  https://example.com  ")
         assert result == "https://example.com"
 
+    def test_url_rejects_localhost(self):
+        with pytest.raises(ValidationError, match="restricted internal domain"):
+            normalize_url("https://localhost/internal")
+
+    def test_url_rejects_private_ip_ranges(self):
+        with pytest.raises(ValidationError, match="restricted internal IP address"):
+            normalize_url("https://10.0.0.1/private")
+
+        with pytest.raises(ValidationError, match="restricted internal IP address"):
+            normalize_url("https://192.168.1.20/private")
+
+        with pytest.raises(ValidationError, match="restricted internal IP address"):
+            normalize_url("https://172.16.10.20/private")
+
+    def test_url_allows_non_numeric_172_hostnames(self):
+        result = normalize_url("https://172.example.com/path")
+        assert result == "https://172.example.com/path"
+
 
 class TestParseExpiration:
     
