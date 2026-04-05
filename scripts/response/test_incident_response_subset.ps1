@@ -83,7 +83,7 @@ Write-Host "====================" -ForegroundColor Cyan
 Write-Host "🔥 Creating CPU load..."
 Start-Job -ScriptBlock { docker exec vybe_app1 sh -c "timeout 120 yes > /dev/null 2>&1 || true" } | Out-Null
 Write-Host ""
-Write-Host "⏱  Expected within 2-5 min:"
+Write-Host "⏱  Expected within <=3 min:"
 Write-Host "  - Alert: HighCPUUsage"
 Write-Host "  - Grafana: CPU panel spikes"
 Write-Host "  - Possible latency increase"
@@ -99,9 +99,9 @@ Start-Sleep -Seconds 30
 Write-Host "🧪 TEST 5: Memory Pressure" -ForegroundColor Cyan
 Write-Host "==========================" -ForegroundColor Cyan
 Write-Host "🔥 Creating memory pressure..."
-Start-Job -ScriptBlock { docker exec vybe_app1 python -c "import time; a=[0]*10**8; time.sleep(120)" 2>$null } | Out-Null
+Start-Job -ScriptBlock { docker exec vybe_app1 python -c "import time; b=bytearray(900*1024*1024); time.sleep(120)" 2>$null } | Out-Null
 Write-Host ""
-Write-Host "⏱  Expected within 2-5 min:"
+Write-Host "⏱  Expected within <=3 min:"
 Write-Host "  - Alert: HighMemoryUsage"
 Write-Host "  - Possible: container restart, latency increase"
 Write-Host ""
@@ -155,3 +155,4 @@ if ($TotalTests -gt 0) {
 
 Write-Host ""
 Write-Host "✅ Test suite completed!"
+
