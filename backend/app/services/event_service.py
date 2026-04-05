@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, List, Optional
 
-from backend.app.models import Event, ShortURL
+from backend.app.models import Event, ShortURL, User
 from backend.app.repositories.event_repository import EventRepository
 
 
@@ -47,6 +47,10 @@ class EventService:
         if not short_url:
             raise ValueError(f"URL with id {url_id} does not exist")
 
+        if user_id is not None:
+            if not User.get_or_none(User.id == user_id):
+                raise ValueError(f"User with id {user_id} does not exist")
+
         details_str = json.dumps(
             details
             or {
@@ -63,12 +67,17 @@ class EventService:
 
     @staticmethod
     def serialize_event(event: Event) -> Dict[str, Any]:
+        ts = event.timestamp
+        if ts.tzinfo is None:
+            from datetime import timezone
+
+            ts = ts.replace(tzinfo=timezone.utc)
         return {
             "id": event.id,
             "url_id": event.url_id.id,
             "short_url_id": event.url_id.id,
             "user_id": event.user_id.id if event.user_id else None,
             "event_type": event.event_type,
-            "timestamp": event.timestamp.isoformat(),
+            "timestamp": ts.isoformat(),
             "details": event.get_details(),
         }

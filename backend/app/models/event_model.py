@@ -24,7 +24,12 @@ class Event(BaseModel):
         ShortURL, backref="events", column_name="url_id", index=True
     )
     user_id = ForeignKeyField(
-        User, backref="events", column_name="user_id", null=True, index=True
+        User,
+        backref="events",
+        column_name="user_id",
+        null=True,
+        index=True,
+        on_delete="SET NULL",
     )
     event_type = CharField(max_length=32, index=True)  # "created" | "accessed"
     timestamp = DateTimeField(default=utcnow, index=True)

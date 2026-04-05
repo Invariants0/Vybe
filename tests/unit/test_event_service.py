@@ -41,9 +41,15 @@ def test_create_event_serializes_details_and_saves():
     short_url.short_code = "abc123"
     short_url.original_url = "https://example.com"
 
-    with patch(
-        "backend.app.services.event_service.ShortURL.get_or_none",
-        return_value=short_url,
+    with (
+        patch(
+            "backend.app.services.event_service.ShortURL.get_or_none",
+            return_value=short_url,
+        ),
+        patch(
+            "backend.app.services.event_service.User.get_or_none",
+            return_value=MagicMock(),
+        ),
     ):
         result = service.create_event(
             url_id=1, event_type="created", user_id=7, details={"source": "manual"}

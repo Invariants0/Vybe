@@ -46,6 +46,8 @@ class BaseRepository(Generic[T]):
             setattr(obj, key, value)
             to_save.append(getattr(self.model, key))
         if to_save:
+            if hasattr(self.model, "updated_at"):
+                to_save.append(self.model.updated_at)
             obj.save(only=to_save)
         return obj
 

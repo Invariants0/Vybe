@@ -1,7 +1,7 @@
 import re
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, HttpUrl, field_validator
+from pydantic import BaseModel, ConfigDict, HttpUrl, field_validator, Field
 
 
 class CreateUserSchema(BaseModel):
@@ -43,7 +43,7 @@ class UpdateUserSchema(BaseModel):
 class CreateUrlSchema(BaseModel):
     user_id: int
     original_url: HttpUrl
-    title: Optional[str] = None
+    title: Optional[str] = Field(None, max_length=255)
 
     model_config = ConfigDict(str_strip_whitespace=True)
 
@@ -56,7 +56,7 @@ class CreateUrlSchema(BaseModel):
 
 
 class UpdateUrlSchema(BaseModel):
-    title: Optional[str] = None
+    title: Optional[str] = Field(None, max_length=255)
     is_active: Optional[bool] = None
 
     model_config = ConfigDict(str_strip_whitespace=True)

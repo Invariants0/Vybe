@@ -8,10 +8,9 @@ from backend.app.utils.cache import cache_get, cache_set, cache_delete
 class UrlController(BaseController):
     def __init__(self, url_service):
         self.url_service = url_service
-        self.config = None  # Will be set if passed in
+        self.config = None
 
     def set_config(self, config):
-        """Set config for cache operations."""
         self.config = config
 
     def create_url(self, request):
@@ -41,8 +40,16 @@ class UrlController(BaseController):
                 "original_url": url.original_url,
                 "title": url.title,
                 "is_active": url.is_active,
-                "created_at": url.created_at.isoformat(),
-                "updated_at": url.updated_at.isoformat(),
+                "created_at": url.created_at.replace(
+                    tzinfo=__import__("datetime").timezone.utc
+                ).isoformat()
+                if url.created_at.tzinfo is None
+                else url.created_at.isoformat(),
+                "updated_at": url.updated_at.replace(
+                    tzinfo=__import__("datetime").timezone.utc
+                ).isoformat()
+                if url.updated_at.tzinfo is None
+                else url.updated_at.isoformat(),
             }
 
             if idempotency_key:
@@ -65,17 +72,19 @@ class UrlController(BaseController):
             is_active = None
             if is_active_raw is not None:
                 is_active = is_active_raw.lower() == "true"
+            page = request.args.get("page", 1, type=int)
+            per_page = request.args.get("per_page", 50, type=int)
 
-            # Create cache key based on user_id filter
-            cache_key = f"urls:list:{user_id or 'all'}:{is_active}"
+            cache_key = f"urls:list:{user_id or 'all'}:{is_active}:{page}:{per_page}"
 
             # Try to get from cache
             cached = cache_get(cache_key, self.config)
             if cached:
                 return self.handle_success(json.loads(cached))
 
-            # Cache miss - fetch from DB
-            urls = self.url_service.list_urls(user_id=user_id, is_active=is_active)
+            urls = self.url_service.list_urls(
+                user_id=user_id, is_active=is_active, page=page, per_page=per_page
+            )
             result = [
                 {
                     "id": u.id,
@@ -84,8 +93,16 @@ class UrlController(BaseController):
                     "original_url": u.original_url,
                     "title": u.title,
                     "is_active": u.is_active,
-                    "created_at": u.created_at.isoformat(),
-                    "updated_at": u.updated_at.isoformat(),
+                    "created_at": u.created_at.replace(
+                        tzinfo=__import__("datetime").timezone.utc
+                    ).isoformat()
+                    if u.created_at.tzinfo is None
+                    else u.created_at.isoformat(),
+                    "updated_at": u.updated_at.replace(
+                        tzinfo=__import__("datetime").timezone.utc
+                    ).isoformat()
+                    if u.updated_at.tzinfo is None
+                    else u.updated_at.isoformat(),
                 }
                 for u in urls
             ]
@@ -104,12 +121,10 @@ class UrlController(BaseController):
         try:
             cache_key = f"url:{url_id}"
 
-            # Try to get from cache
             cached = cache_get(cache_key, self.config)
             if cached:
                 return self.handle_success(json.loads(cached))
 
-            # Cache miss - fetch from DB
             url = self.url_service.get_url(url_id)
             if not url:
                 raise ValueError("URL not found")
@@ -121,11 +136,18 @@ class UrlController(BaseController):
                 "original_url": url.original_url,
                 "title": url.title,
                 "is_active": url.is_active,
-                "created_at": url.created_at.isoformat(),
-                "updated_at": url.updated_at.isoformat(),
+                "created_at": url.created_at.replace(
+                    tzinfo=__import__("datetime").timezone.utc
+                ).isoformat()
+                if url.created_at.tzinfo is None
+                else url.created_at.isoformat(),
+                "updated_at": url.updated_at.replace(
+                    tzinfo=__import__("datetime").timezone.utc
+                ).isoformat()
+                if url.updated_at.tzinfo is None
+                else url.updated_at.isoformat(),
             }
 
-            # Store in cache for 5 minutes
             cache_set(cache_key, json.dumps(result), 300, self.config)
 
             return self.handle_success(result)
@@ -155,8 +177,16 @@ class UrlController(BaseController):
                     "original_url": url.original_url,
                     "title": url.title,
                     "is_active": url.is_active,
-                    "created_at": url.created_at.isoformat(),
-                    "updated_at": url.updated_at.isoformat(),
+                    "created_at": url.created_at.replace(
+                        tzinfo=__import__("datetime").timezone.utc
+                    ).isoformat()
+                    if url.created_at.tzinfo is None
+                    else url.created_at.isoformat(),
+                    "updated_at": url.updated_at.replace(
+                        tzinfo=__import__("datetime").timezone.utc
+                    ).isoformat()
+                    if url.updated_at.tzinfo is None
+                    else url.updated_at.isoformat(),
                 }
             )
         except Exception as e:

@@ -45,17 +45,42 @@ class UrlService:
             raise ValueError(f"User with id {user_id} does not exist.")
 
         normalized_url = normalize_url(original_url)
-        short_code = self._generate_unique_code()
 
-        short_url = self.repo.create(
-            user_id=user.id,
-            short_code=short_code,
-            original_url=normalized_url,
-            title=title,
-            is_active=True,
+        existing_urls = self.repo.get_all(
+            user_id=user.id, original_url=normalized_url, is_active=True
         )
+        if existing_urls:
+            return existing_urls[0]
 
-        self.event_repo.log_event(short_url, "created", user=user)
+        short_url = None
+        for _ in range(10):
+            short_code = generate_short_code(self.short_code_length)
+            try:
+                short_url = self.repo.create(
+                    user_id=user.id,
+                    short_code=short_code,
+                    original_url=normalized_url,
+                    title=title,
+                    is_active=True,
+                )
+                break
+            except IntegrityError:
+                continue
+
+        if not short_url:
+            raise IntegrityError(
+                "Could not generate a unique short code after 10 attempts."
+            )
+
+        try:
+            self.event_repo.log_event(short_url, "created", user=user)
+        except Exception as e:
+            logger.warning(
+                "Failed to log creation event for short_url=%s: %s",
+                short_url.short_code,
+                e,
+            )
+
         self._cache_short_url(short_url)
         return short_url
 
@@ -66,14 +91,21 @@ class UrlService:
         return self.repo.find_by_code(short_code)
 
     def list_urls(
-        self, user_id: Optional[int] = None, is_active: Optional[bool] = None
+        self,
+        user_id: Optional[int] = None,
+        is_active: Optional[bool] = None,
+        page: int = 1,
+        per_page: int = 50,
     ) -> List[ShortURL]:
         filters = {}
         if user_id:
             filters["user_id"] = user_id
         if is_active is not None:
             filters["is_active"] = is_active
-        return self.repo.get_all(order_by=ShortURL.id, **filters)
+        skip = (page - 1) * per_page
+        return self.repo.get_all(
+            skip=skip, limit=per_page, order_by=ShortURL.id, **filters
+        )
 
     def update_url(self, url_id: int, data: Dict[str, Any]) -> Optional[ShortURL]:
         updates = {}
@@ -155,13 +187,7 @@ class UrlService:
         return short_url.original_url
 
     def _generate_unique_code(self) -> str:
-        for _ in range(10):
-            code = generate_short_code(self.short_code_length)
-            if not self.repo.find_by_code(code):
-                return code
-        raise IntegrityError(
-            "Could not generate a unique short code after 10 attempts."
-        )
+        return generate_short_code(self.short_code_length)
 
     def _get_cached_raw(self, short_code: str) -> Optional[str]:
         return cache_get(f"shorturl:{short_code}", self.config)
@@ -207,4 +233,11 @@ class UrlService:
             return
         if sample_rate < 1.0 and random.random() > sample_rate:
             return
-        self.event_repo.log_event(short_url, "accessed")
+        try:
+            self.event_repo.log_event(short_url, "accessed")
+        except Exception as e:
+            logger.warning(
+                "Failed to log event for short_url=%s: %s",
+                getattr(short_url, "short_code", "unknown"),
+                e,
+            )

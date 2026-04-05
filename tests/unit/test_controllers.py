@@ -146,7 +146,7 @@ class TestUrlController:
         assert status == 200
         assert response.get_json()[0]["id"] == 1
         controller.url_service.list_urls.assert_called_once_with(
-            user_id=1, is_active=None
+            user_id=1, is_active=None, page=1, per_page=50
         )
         cache_set.assert_called_once()
 
@@ -251,6 +251,27 @@ class TestUserController:
 
         assert status == 422
         assert response.get_json()["error"] == "validation_error"
+
+    def test_create_user_json_required(self, app):
+        controller = UserController(MagicMock())
+
+        with app.app_context():
+            response, status = controller.create_user(_request(payload=None))
+
+        assert status == 400
+        assert response.get_json()["error"] == "bad_request"
+
+    def test_create_user_rejects_non_dict_payload(self, app):
+        controller = UserController(MagicMock())
+
+        with app.app_context():
+            response, status = controller.create_user(
+                _request(payload=["not", "a", "dict"])
+            )
+
+        assert status == 400
+        assert response.get_json()["error"] == "bad_request"
+        assert response.get_json()["message"] == "Payload must be a JSON object"
 
     def test_list_users_uses_get_all_users_when_unpaged(self, app):
         controller = UserController(MagicMock())

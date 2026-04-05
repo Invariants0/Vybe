@@ -50,11 +50,15 @@ class EventController(BaseController):
             if not data:
                 raise ValueError("Payload cannot be empty")
 
+            details = data.get("details", {})
+            if details is not None and not isinstance(details, dict):
+                raise ValueError("details must be a JSON object")
+
             event = self.event_service.create_event(
                 url_id=data.get("url_id"),
                 user_id=data.get("user_id"),
                 event_type=data.get("event_type"),
-                details=data.get("details", {}),
+                details=details,
             )
 
             return self.handle_success(self.event_service.serialize_event(event), 201)

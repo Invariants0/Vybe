@@ -18,14 +18,14 @@ def utcnow():
 
 
 class ShortURL(BaseModel):
-    """
-    Primary URL model aligned to the evaluator API contract and seed data.
-    Table: urls
-    """
-
     id = BigAutoField()
     user_id = ForeignKeyField(
-        User, backref="urls", column_name="user_id", null=True, index=True
+        User,
+        backref="urls",
+        column_name="user_id",
+        null=True,
+        index=True,
+        on_delete="SET NULL",
     )
     short_code = CharField(unique=True, max_length=32, index=True)
     original_url = TextField()

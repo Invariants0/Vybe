@@ -43,6 +43,7 @@ def test_create_url_success(service):
     mock_url.is_active = True
     url_repo.create.return_value = mock_url
     url_repo.find_by_code.return_value = None
+    url_repo.get_all.return_value = []
 
     with patch("backend.app.services.url_service.cache_set"):
         result = svc.create_url(
@@ -51,6 +52,20 @@ def test_create_url_success(service):
 
     assert result == mock_url
     event_repo.log_event.assert_called_once_with(mock_url, "created", user=mock_user)
+
+
+def test_create_url_exhaustion(service):
+    from peewee import IntegrityError
+
+    svc, url_repo, user_repo, event_repo = service
+    user_repo.get_by_id.return_value = MagicMock(id=1)
+    url_repo.get_all.return_value = []
+    url_repo.create.side_effect = IntegrityError("collision")
+
+    with pytest.raises(IntegrityError, match="Could not generate a unique short code"):
+        svc.create_url(user_id=1, original_url="https://google.com", title="Google")
+
+    assert url_repo.create.call_count == 10
 
 
 def test_resolve_redirect_success_db_path(service):
