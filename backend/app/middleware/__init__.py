@@ -3,7 +3,12 @@ import time
 import uuid
 
 from flask import g, has_request_context, request
-import sentry_sdk
+try:
+    import sentry_sdk
+    _SENTRY_AVAILABLE = True
+except ImportError:
+    sentry_sdk = None  # type: ignore[assignment]
+    _SENTRY_AVAILABLE = False
 
 
 def register_middleware(app):
@@ -46,14 +51,16 @@ def register_middleware(app):
         g.request_id = request.headers.get("X-Request-Id", str(uuid.uuid4()))
         g.request_started_at = time.perf_counter()
         
-        # Add request context to Sentry
-        with sentry_sdk.configure_scope() as scope:
-            scope.set_tag("request_id", g.request_id)
-            scope.set_context("request", {
-                "method": request.method,
-                "url": request.url,
-                "headers": dict(request.headers),
-            })
+        # Add request context to Sentry (SDK v2 compatible)
+        if _SENTRY_AVAILABLE:
+            try:
+                sentry_sdk.set_tag("request_id", g.request_id)
+                sentry_sdk.set_context("request", {
+                    "method": request.method,
+                    "url": request.url,
+                })
+            except Exception:
+                pass
 
     @app.after_request
     def _log_response(response):

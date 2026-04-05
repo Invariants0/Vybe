@@ -29,6 +29,16 @@ class ConflictError(AppError):
     error_code = "conflict"
 
 
+class ForbiddenError(AppError):
+    status_code = 403
+    error_code = "forbidden"
+
+
+class GoneError(AppError):
+    status_code = 410
+    error_code = "gone"
+
+
 def register_error_handlers(app):
     @app.errorhandler(BadRequest)
     def _handle_bad_request(error):

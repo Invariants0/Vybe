@@ -6,7 +6,7 @@ echo "Starting application..."
 if [ -n "${DATABASE_HOST}" ] && [ "${DATABASE_HOST}" != "localhost" ]; then
   echo "Waiting for database at ${DATABASE_HOST}:${DATABASE_PORT:-5432}..."
   
-  timeout=30
+  timeout=60
   elapsed=0
   until nc -z "${DATABASE_HOST}" "${DATABASE_PORT:-5432}" || [ $elapsed -ge $timeout ]; do
     echo "Database is unavailable - sleeping"

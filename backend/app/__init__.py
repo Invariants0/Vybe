@@ -1,8 +1,14 @@
 from dotenv import load_dotenv
 from flask import Flask, jsonify
 import os
-import sentry_sdk
-from sentry_sdk.integrations.flask import FlaskIntegration
+try:
+    import sentry_sdk
+    from sentry_sdk.integrations.flask import FlaskIntegration
+    _SENTRY_AVAILABLE = True
+except ImportError:
+    sentry_sdk = None  # type: ignore[assignment]
+    FlaskIntegration = None  # type: ignore[assignment]
+    _SENTRY_AVAILABLE = False
 
 from backend.app.config import create_tables, get_config, init_db, ping_db, register_error_handlers
 from backend.app.middleware import register_middleware
@@ -18,15 +24,15 @@ def create_app():
 
     # Initialize Sentry for error tracking
     sentry_dsn = os.getenv("SENTRY_DSN")
-    if sentry_dsn:
+    if sentry_dsn and _SENTRY_AVAILABLE:
         sentry_sdk.init(
             dsn=sentry_dsn,
             integrations=[FlaskIntegration()],
-            traces_sample_rate=0.1,  # 10% of transactions for performance monitoring
-            profiles_sample_rate=0.1,  # 10% for profiling
+            traces_sample_rate=0.1,
+            profiles_sample_rate=0.1,
             environment=os.getenv("FLASK_ENV", "development"),
             release=os.getenv("APP_VERSION", "unknown"),
-            send_default_pii=False,  # Don't send PII by default
+            send_default_pii=False,
         )
 
     app = Flask(__name__)

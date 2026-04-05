@@ -7,6 +7,7 @@ import random
 from peewee import IntegrityError
 
 from backend.app.models import Event, ShortURL, User
+from backend.app.config.errors import ForbiddenError, NotFoundError
 from backend.app.utils.codecs import generate_short_code
 from backend.app.utils.cache import cache_get, cache_set, cache_delete
 from backend.app.utils.urls import normalize_url
@@ -116,6 +117,11 @@ class UrlService:
         if cached_raw:
             try:
                 data = json.loads(cached_raw)
+                
+                # Check active status from cache if present
+                if not data.get("is_active", True):
+                    raise ForbiddenError("URL has been deactivated.")
+                
                 uid = data.get("user_id")
                 cached_url_obj = _CachedURL(
                     id=data["id"],
@@ -125,13 +131,20 @@ class UrlService:
                 )
                 self._maybe_log_event(cached_url_obj)  # type: ignore[arg-type]
                 return cached_url_obj.original_url
+            except ForbiddenError:
+                raise
             except Exception:
                 logger.warning("Corrupt cache entry for short_code=%s, evicting.", short_code)
                 cache_delete(f"shorturl:{short_code}", self.config)
 
         short_url = self.get_url_by_code(short_code)
-        if not short_url or not short_url.is_active:
-            return None
+        if not short_url:
+            raise NotFoundError("URL not found.")
+        
+        if not short_url.is_active:
+            # Cache the deactivated state to prevent DB hammers
+            self._cache_short_url(short_url)
+            raise ForbiddenError("URL has been deactivated.")
 
         self._maybe_log_event(short_url)
         self._cache_short_url(short_url)
@@ -177,6 +190,7 @@ class UrlService:
                 "id": url_obj.id,
                 "original_url": url_obj.original_url,
                 "user_id": raw_uid,
+                "is_active": url_obj.is_active,
             }
         )
         cache_set(cache_key, payload, ttl, self.config)

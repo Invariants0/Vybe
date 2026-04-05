@@ -132,10 +132,9 @@ class UserController(BaseController):
     def delete_user(self, user_id: int):
         try:
             user = self.user_service.get_user(user_id)
-            if not user:
-                raise ValueError("User not found")
-            self.user_service.delete_user(user_id)
-            cache_delete(f"user:{user_id}", self.config)
+            if user:
+                self.user_service.delete_user(user_id)
+                cache_delete(f"user:{user_id}", self.config)
             return self.handle_success({}, 204)
         except Exception as e:
             return self.handle_error(e, "delete_user")

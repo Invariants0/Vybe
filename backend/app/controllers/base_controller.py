@@ -18,9 +18,11 @@ class BaseController:
         msg = str(error)
 
         if SENTRY_AVAILABLE and current_app.config.get("SENTRY_DSN"):
-            with sentry_sdk.push_scope() as scope:
-                scope.set_tag("operation", operation_name)
+            try:
+                sentry_sdk.set_tag("operation", operation_name)
                 sentry_sdk.capture_exception(error)
+            except Exception:
+                pass
 
         # Pydantic validation error - check first before string comparison
         if hasattr(error, "errors"):
@@ -39,11 +41,19 @@ class BaseController:
 
         # We'll map some known exceptions to nice JSON responses
         if error_type == "ValidationError":
-            return jsonify({"error": "validation_error", "message": msg}), 422
+            return jsonify({"error": "validation_error", "message": msg}), 400
         elif error_type == "ConflictError" or error_type == "IntegrityError":
             return jsonify({"error": "conflict", "message": msg}), 409
-        elif error_type == "NotFoundError" or error_type == "ValueError":
+        elif error_type == "NotFoundError":
             return jsonify({"error": "not_found", "message": msg}), 404
+        elif error_type == "ForbiddenError":
+            return jsonify({"error": "forbidden", "message": msg}), 403
+        elif error_type == "GoneError":
+            return jsonify({"error": "gone", "message": msg}), 410
+        elif error_type == "ValueError":
+            if "not found" in msg.lower():
+                return jsonify({"error": "not_found", "message": msg}), 404
+            return jsonify({"error": "bad_request", "message": msg}), 400
 
         logging.exception(f"Unexpected error in {operation_name}: {error}")
         return jsonify({"status": "error", "message": "An internal server error occurred."}), 500

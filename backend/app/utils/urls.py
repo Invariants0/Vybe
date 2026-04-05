@@ -17,6 +17,27 @@ def normalize_url(url, max_length=2048):
         raise ValidationError("url must start with http:// or https://.")
     if not parsed.netloc:
         raise ValidationError("url must include a valid hostname.")
+        
+    # SSRF Protection: Block internal and private IPv4 ranges
+    netloc = parsed.netloc.lower()
+    hostname = netloc.split(':')[0]
+    
+    # Block literal localhost
+    if hostname in {"localhost", "127.0.0.1", "0.0.0.0", "::1"}:
+        raise ValidationError("url points to a restricted internal domain.")
+        
+    # Basic rudimentary block for private/internal IPv4 address spaces
+    if hostname.startswith("10.") or hostname.startswith("192.168.") or hostname.startswith("169.254."):
+        raise ValidationError("url points to a restricted internal IP address.")
+    if hostname.startswith("172."):
+        # Check 172.16.0.0 - 172.31.255.255
+        try:
+            second_octet = int(hostname.split(".")[1])
+            if 16 <= second_octet <= 31:
+                raise ValidationError("url points to a restricted internal IP address.")
+        except (IndexError, ValueError):
+            pass
+
     return candidate
 
 

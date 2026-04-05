@@ -17,6 +17,13 @@ class UrlController(BaseController):
 
     def create_url(self, request):
         try:
+            idempotency_key = request.headers.get("Idempotency-Key")
+            if idempotency_key:
+                cache_key = f"idempotency:url:{idempotency_key}"
+                cached_resp = cache_get(cache_key, self.config)
+                if cached_resp:
+                    return self.handle_success(json.loads(cached_resp), 201)
+
             data = request.get_json()
             if not data:
                 raise ValueError("Payload cannot be empty")
@@ -28,13 +35,7 @@ class UrlController(BaseController):
                 title=schema.title
             )
             
-            # NOTE: We intentionally do NOT call cache_delete("urls:list:*") here.
-            # At 500 VUs, 5% write traffic means ~25 creates/sec, each wiping
-            # all list caches via an O(N) Redis SCAN. The 15% list-read traffic
-            # then perpetually misses cache, hammering Postgres instead.
-            # List caches use a short TTL (30s) for natural expiry — see list_urls.
-            
-            return self.handle_success({
+            result = {
                 "id": url.id,
                 "user_id": url.user_id.id,
                 "short_code": url.short_code,
@@ -43,7 +44,13 @@ class UrlController(BaseController):
                 "is_active": url.is_active,
                 "created_at": url.created_at.isoformat(),
                 "updated_at": url.updated_at.isoformat(),
-            }, 201)
+            }
+            
+            if idempotency_key:
+                # Cache the successful payload against the idempotency key for 24h
+                cache_set(f"idempotency:url:{idempotency_key}", json.dumps(result), 86400, self.config)
+                
+            return self.handle_success(result, 201)
         except Exception as e:
             return self.handle_error(e, "create_url")
 
@@ -152,10 +159,10 @@ class UrlController(BaseController):
     def delete_url(self, url_id: int):
         try:
             url = self.url_service.get_url(url_id)
-            if not url:
-                raise ValueError("URL not found")
-            self.url_service.delete_url(url_id)
-            cache_delete(f"url:{url_id}", self.config)
+            if url:
+                self.url_service.delete_url(url_id)
+                cache_delete(f"url:{url_id}", self.config)
             return self.handle_success({}, 204)
         except Exception as e:
             return self.handle_error(e, "delete_url")
+
