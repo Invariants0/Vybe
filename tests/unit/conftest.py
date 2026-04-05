@@ -62,7 +62,8 @@ def app():
             CreateUserSchema(**data)
             return jsonify({"id": 1, "username": data.get("username"), "email": data.get("email")}), 201
         except ValidationError as e:
-            return jsonify({"error": "validation_error", "details": e.errors()}), 422
+            errors = [{"loc": err.get("loc", []), "msg": err.get("msg", ""), "type": err.get("type", "")} for err in e.errors()]
+            return jsonify({"error": "validation_error", "details": errors}), 422
 
     return app
 
