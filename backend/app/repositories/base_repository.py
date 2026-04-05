@@ -1,6 +1,6 @@
 from typing import Any, Generic, List, Optional, TypeVar
 
-from peewee import DoesNotExist, IntegrityError
+from peewee import DoesNotExist
 
 from backend.app.config.database import BaseModel
 

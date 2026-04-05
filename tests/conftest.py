@@ -57,7 +57,10 @@ def client(app):
 @pytest.fixture(autouse=True)
 def clean_database(app, request):
     """Ensure strict test isolation by truncating tables before each test execution."""
-    if "\\tests\\unit\\" in str(request.node.fspath):
+    # Skip for unit tests - use os.path to handle path separators correctly
+    import os
+    fspath = str(request.node.fspath)
+    if os.sep + "tests" + os.sep + "unit" + os.sep in fspath:
         yield
         return
 

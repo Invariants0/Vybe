@@ -1,6 +1,6 @@
-import io
-import pytest
+from __future__ import annotations
 
+import io
 
 class TestHealth:
     
@@ -286,7 +286,7 @@ class TestEvents:
             "original_url": "https://opswise.net/harbor/journey/1",
             "title": "Service guide lagoon"
         })
-        url_id = url_response.get_json()["id"]
+        assert url_response.status_code == 201
         
         response = client.get("/events")
         assert response.status_code == 200

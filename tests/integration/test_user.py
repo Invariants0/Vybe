@@ -1,7 +1,3 @@
-import json
-import pytest
-
-
 def test_create_user(client):
     response = client.post("/users", json={"username": "testuser", "email": "test@vybe.local"})
     assert response.status_code == 201

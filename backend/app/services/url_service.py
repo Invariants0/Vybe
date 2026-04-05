@@ -1,3 +1,4 @@
+import json
 import logging
 from collections import namedtuple
 from typing import Any, Dict, List, Optional
@@ -5,7 +6,7 @@ import random
 
 from peewee import IntegrityError
 
-from backend.app.models import Event, ShortURL, User
+from backend.app.models import ShortURL, User
 from backend.app.config.errors import ForbiddenError, NotFoundError
 from backend.app.utils.codecs import generate_short_code
 from backend.app.utils.cache import cache_get, cache_set, cache_delete

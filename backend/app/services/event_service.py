@@ -1,6 +1,8 @@
+import json
+import logging
 from typing import Any, Dict, List, Optional
 
-from backend.app.models import Event, ShortURL, User
+from backend.app.models import Event, ShortURL
 from backend.app.repositories.event_repository import EventRepository
 
 

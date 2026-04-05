@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_create_url(client, test_user):
     user_id = test_user["id"]
     response = client.post("/urls", json={

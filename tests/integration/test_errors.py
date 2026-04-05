@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_validation_error_format(client):
     response = client.post("/users", json={"username": "err", "email": "not-an-email"})
     

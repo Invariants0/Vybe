@@ -1,4 +1,5 @@
-from pydantic import ValidationError
+import json
+
 from werkzeug.exceptions import BadRequest
 
 from backend.app.controllers.base_controller import BaseController
