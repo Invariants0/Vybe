@@ -27,12 +27,17 @@ def _sanitize_for_log(value: Any) -> Any:
 
 
 def _is_enabled(config: Optional[dict[str, Any]] = None) -> bool:
+    # Auto-enable if REDIS_URL is set
     if config and isinstance(config, dict):
+        if config.get("REDIS_URL"):
+            return True
         val = config.get("REDIS_ENABLED")
         if isinstance(val, bool):
             return val
         if isinstance(val, str):
             return val.lower() == "true"
+    if os.getenv("REDIS_URL", ""):
+        return True
     return os.getenv("REDIS_ENABLED", "false").lower() == "true"
 
 
