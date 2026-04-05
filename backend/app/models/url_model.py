@@ -41,10 +41,6 @@ class ShortURL(BaseModel):
 
 
 class LinkVisit(BaseModel):
-    """
-    Per-redirect visit tracking kept for backwards compat.
-    Table: link_visits
-    """
 
     id = BigAutoField()
     short_url = ForeignKeyField(ShortURL, backref="visits", on_delete="CASCADE")

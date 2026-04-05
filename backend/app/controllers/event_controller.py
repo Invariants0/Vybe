@@ -6,10 +6,9 @@ from backend.app.utils.cache import cache_get, cache_set
 class EventController(BaseController):
     def __init__(self, event_service):
         self.event_service = event_service
-        self.config = None  # Will be set if passed in
+        self.config = None
     
     def set_config(self, config):
-        """Set config for cache operations."""
         self.config = config
 
     def list_events(self, request):
