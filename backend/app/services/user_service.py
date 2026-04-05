@@ -47,6 +47,9 @@ class UserService:
 
         return self.repo.update(user_id, **updates)
 
+    def delete_user(self, user_id: int) -> None:
+        self.repo.delete(user_id)
+
     def bulk_import_csv(self, file_content: str) -> int:
         f = io.StringIO(file_content.strip())
         reader = csv.DictReader(f)
@@ -72,5 +75,18 @@ class UserService:
                 imported_count += 1
             except (KeyError, ValueError, IntegrityError):
                 continue
+
+        # After bulk-importing rows with explicit IDs, PostgreSQL's sequence
+        # is still at its pre-import value. Reset it to max(id) so that the
+        # next auto-generated INSERT does not collide with an existing CSV row.
+        if imported_count > 0:
+            try:
+                from backend.app.config.database import db
+                db.execute_sql(
+                    "SELECT setval(pg_get_serial_sequence('users', 'id'), "
+                    "(SELECT MAX(id) FROM users))"
+                )
+            except Exception:
+                pass  # Non-fatal: will retry on next INSERT failure
 
         return imported_count

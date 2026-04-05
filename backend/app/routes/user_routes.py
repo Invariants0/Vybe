@@ -32,6 +32,10 @@ def get_user(user_id):
 def update_user(user_id):
     return get_controller().update_user(user_id, request)
 
+@users_bp.delete("/<int:user_id>")
+def delete_user(user_id):
+    return get_controller().delete_user(user_id)
+
 @users_bp.post("/bulk")
 def bulk_import_users():
     return get_controller().bulk_import(request)

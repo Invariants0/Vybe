@@ -23,6 +23,30 @@ class EventRepository(BaseRepository[Event]):
             .limit(limit)
         )
 
+    def list_filtered(
+        self,
+        url_id: int = None,
+        user_id: int = None,
+        event_type: str = None,
+        skip: int = 0,
+        limit: int = 100
+    ) -> List[Event]:
+        """List events with optional filters on url_id, user_id, and event_type."""
+        from peewee import JOIN
+        query = (
+            Event.select(Event, ShortURL, User)
+            .join(ShortURL, on=(Event.url_id == ShortURL.id))
+            .switch(Event)
+            .join(User, JOIN.LEFT_OUTER, on=(Event.user_id == User.id))
+        )
+        if url_id is not None:
+            query = query.where(Event.url_id == url_id)
+        if user_id is not None:
+            query = query.where(Event.user_id == user_id)
+        if event_type is not None:
+            query = query.where(Event.event_type == event_type)
+        return list(query.order_by(Event.id).offset(skip).limit(limit))
+
     def get_all(self, skip: int = 0, limit: int = 100, order_by=None, **filters) -> List[Event]:
         """
         Override base get_all to prefetch FKs and avoid N+1 queries.

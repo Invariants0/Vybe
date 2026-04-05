@@ -33,3 +33,7 @@ def get_url(url_id):
 @urls_bp.put("/<int:url_id>")
 def update_url(url_id):
     return get_controller().update_url(url_id, request)
+
+@urls_bp.delete("/<int:url_id>")
+def delete_url(url_id):
+    return get_controller().delete_url(url_id)
