@@ -3,6 +3,7 @@ import time
 import uuid
 
 from flask import g, has_request_context, request
+import sentry_sdk
 
 
 def register_middleware(app):
@@ -44,6 +45,15 @@ def register_middleware(app):
     def _attach_request_context():
         g.request_id = request.headers.get("X-Request-Id", str(uuid.uuid4()))
         g.request_started_at = time.perf_counter()
+        
+        # Add request context to Sentry
+        with sentry_sdk.configure_scope() as scope:
+            scope.set_tag("request_id", g.request_id)
+            scope.set_context("request", {
+                "method": request.method,
+                "url": request.url,
+                "headers": dict(request.headers),
+            })
 
     @app.after_request
     def _log_response(response):
@@ -51,11 +61,15 @@ def register_middleware(app):
         if hasattr(g, 'request_started_at'):
             duration_ms = round((time.perf_counter() - g.request_started_at) * 1000, 2)
             response.headers["X-Request-Id"] = g.request_id
-            app.logger.info(
-                "%s %s -> %s (%sms)",
-                request.method,
-                request.path,
-                response.status_code,
-                duration_ms,
-            )
+            
+            # Enhanced logging with status code
+            log_message = f"{request.method} {request.path} -> {response.status_code} ({duration_ms}ms)"
+            
+            if response.status_code >= 500:
+                app.logger.error(log_message)
+            elif response.status_code >= 400:
+                app.logger.warning(log_message)
+            else:
+                app.logger.info(log_message)
+        
         return response
