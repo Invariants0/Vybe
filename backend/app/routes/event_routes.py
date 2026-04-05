@@ -1,6 +1,7 @@
 from flask import Blueprint, current_app, request
 
 from backend.app.controllers.event_controller import EventController
+from backend.app.middleware import limiter
 from backend.app.services.event_service import EventService
 
 events_bp = Blueprint("events_bp", __name__, url_prefix="/events")
@@ -21,5 +22,6 @@ def list_events():
     return get_controller().list_events(request)
 
 @events_bp.post("")
+@limiter.limit(lambda: current_app.config.get("RATE_LIMIT_WRITE", "120 per minute"))
 def create_event():
     return get_controller().create_event(request)
