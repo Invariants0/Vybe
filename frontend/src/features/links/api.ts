@@ -8,7 +8,7 @@ export const linksApi = {
     return data.map((link: unknown) => linkSchema.parse(link));
   },
 
-  async getById(id: string): Promise<Link> {
+  async getById(id: number): Promise<Link> {
     const { data } = await apiClient.get(`/links/${id}`);
     return linkSchema.parse(data);
   },
@@ -19,12 +19,12 @@ export const linksApi = {
     return linkSchema.parse(data);
   },
 
-  async update(id: string, updates: Partial<Link>): Promise<Link> {
+  async update(id: number, updates: Partial<Link>): Promise<Link> {
     const { data } = await apiClient.patch(`/links/${id}`, updates);
     return linkSchema.parse(data);
   },
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await apiClient.delete(`/links/${id}`);
   },
 };

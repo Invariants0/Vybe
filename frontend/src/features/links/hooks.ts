@@ -10,7 +10,6 @@ export function useLinks() {
     error,
     setLinks,
     addLink,
-    updateLink,
     deleteLink,
     setLoading,
     setError,
@@ -48,7 +47,7 @@ export function useLinks() {
     }
   };
 
-  const removeLink = async (id: string) => {
+  const removeLink = async (id: number) => {
     try {
       setLoading(true);
       await linksApi.delete(id);
@@ -68,7 +67,6 @@ export function useLinks() {
     error,
     fetchLinks,
     createLink,
-    updateLink,
     removeLink,
   };
 }

@@ -1,18 +1,18 @@
 import { z } from 'zod';
 
 export const linkSchema = z.object({
-  id: z.string().optional(),
-  shortCode: z.string().min(3).max(50),
-  originalUrl: z.string().url(),
-  title: z.string().optional(),
-  clicks: z.number().default(0),
-  status: z.enum(['active', 'expired', 'disabled']).default('active'),
-  createdAt: z.date().optional(),
-  expiresAt: z.date().optional().nullable(),
+  id: z.number(),
+  user_id: z.number(),
+  short_code: z.string(),
+  original_url: z.string().url(),
+  title: z.string().nullable(),
+  is_active: z.boolean(),
+  created_at: z.string(),
+  updated_at: z.string(),
 });
 
 export const createLinkSchema = z.object({
-  originalUrl: z.string().url('Please enter a valid URL'),
-  customSlug: z.string().min(3).max(50).optional(),
-  expiresAt: z.date().optional(),
+  original_url: z.string().url('Please enter a valid URL'),
+  user_id: z.number(),
+  title: z.string().optional(),
 });

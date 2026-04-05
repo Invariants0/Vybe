@@ -2,8 +2,30 @@
 
 import { Button } from '@/components/ui';
 import Link from 'next/link';
+import { useState } from 'react';
+import { linksApi } from '@/features/links/api';
 
 export function HeroShortener() {
+  const [url, setUrl] = useState('');
+  const [result, setResult] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleShorten = async () => {
+    if (!url.trim()) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const link = await linksApi.create({ original_url: url, user_id: 1 });
+      setResult(`${window.location.origin}/${link.short_code}`);
+      setUrl('');
+    } catch {
+      setError('Failed to shorten URL');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section
       id="product"
@@ -41,7 +63,13 @@ export function HeroShortener() {
           </p>
 
           {/* Shortener Input */}
-          <div className="bg-vybe-light p-2 border-2 border-vybe-black shadow-[8px_8px_0px_0px_#0a1f0c] flex flex-col sm:flex-row gap-2 max-w-xl">
+          <form
+            className="bg-vybe-light p-2 border-2 border-vybe-black shadow-[8px_8px_0px_0px_#0a1f0c] flex flex-col sm:flex-row gap-2 max-w-xl"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleShorten();
+            }}
+          >
             <div className="flex-1 flex items-center px-4 bg-vybe-gray border-2 border-transparent focus-within:border-vybe-black transition-colors">
               <svg
                 className="w-5 h-5 text-vybe-dark/50 mr-2"
@@ -59,12 +87,37 @@ export function HeroShortener() {
                 type="url"
                 placeholder="Paste your long URL here..."
                 className="w-full bg-transparent py-4 outline-none font-medium placeholder:text-vybe-dark/50"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                required
               />
             </div>
-            <Button variant="dark" size="lg" className="shrink-0">
-              Shorten →
+            <Button variant="dark" size="lg" className="shrink-0" type="submit" disabled={loading}>
+              {loading ? '...' : 'Shorten →'}
             </Button>
-          </div>
+          </form>
+
+          {result && (
+            <div className="bg-vybe-light p-4 border-2 border-vybe-black shadow-[4px_4px_0px_0px_#0a1f0c] max-w-xl">
+              <p className="text-sm font-bold text-vybe-dark/70 mb-1">Your shortened link:</p>
+              <button
+                type="button"
+                className="text-lg font-extrabold text-vybe-primary hover:underline cursor-pointer"
+                onClick={() => {
+                  navigator.clipboard.writeText(result);
+                }}
+              >
+                {result}
+              </button>
+              <p className="text-xs text-vybe-dark/50 mt-1">Click to copy</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-100 border-2 border-red-400 text-red-700 px-4 py-2 font-bold max-w-xl">
+              {error}
+            </div>
+          )}
 
           {/* Inline Features */}
           <div className="flex flex-wrap gap-3 pt-4">
@@ -73,7 +126,7 @@ export function HeroShortener() {
                 key={feat}
                 className="inline-flex items-center gap-1.5 px-3 py-1 bg-vybe-light border-2 border-vybe-black text-sm font-bold shadow-[2px_2px_0px_0px_#0a1f0c]"
               >
-                ⚡ {feat}
+                {feat}
               </span>
             ))}
           </div>
