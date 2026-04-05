@@ -1,9 +1,9 @@
 'use client';
 
 import { Button } from '@/components/ui';
+import { linksApi } from '@/features/links/api';
 import Link from 'next/link';
 import { useState } from 'react';
-import { linksApi } from '@/features/links/api';
 
 export function HeroShortener() {
   const [url, setUrl] = useState('');

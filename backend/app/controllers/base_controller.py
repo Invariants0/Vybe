@@ -1,5 +1,3 @@
-import logging
-
 from flask import current_app, g, jsonify
 
 try:
@@ -58,7 +56,9 @@ class BaseController:
                 return jsonify({"error": "not_found", "message": msg}), 404
             return jsonify({"error": "bad_request", "message": msg}), 400
 
-        current_app.logger.exception("Unexpected error in %s: %s", operation_name, error)
+        current_app.logger.exception(
+            "Unexpected error in %s: %s", operation_name, error
+        )
 
         payload = {"status": "error", "message": "An internal server error occurred."}
         if current_app.config.get("EXPOSE_ERROR_DETAILS"):

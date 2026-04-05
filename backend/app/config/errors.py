@@ -1,6 +1,6 @@
 import traceback
 
-from flask import g, jsonify
+from flask import jsonify
 from flask_limiter.errors import RateLimitExceeded
 from werkzeug.exceptions import BadRequest
 
