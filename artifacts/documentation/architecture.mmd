@@ -1,0 +1,107 @@
+graph TB
+    subgraph User["Client Layer"]
+        Desktop["Web Browser<br/>Mobile App"]
+        Bot["API Client<br/>curl/Python/JS"]
+    end
+    
+    subgraph Ingress["Ingress & Routing"]
+        Nginx["Nginx Reverse Proxy<br/>Port 80/443<br/>Load Balancing<br/>SSL/TLS Termination"]
+    end
+    
+    subgraph Frontend["Frontend Layer"]
+        NextJS["Next.js 15 Application<br/>React 19 + TypeScript<br/>Port 3000<br/>Zustand State Management"]
+    end
+    
+    subgraph AppLayer["Application Layer"]
+        Flask1["Flask App Instance 1<br/>Gunicorn WSGI Server<br/>Port 5000<br/>2 Workers<br/>~500 RPS Capacity"]
+        Flask2["Flask App Instance 2<br/>Gunicorn WSGI Server<br/>Port 5000<br/>2 Workers<br/>~500 RPS Capacity"]
+    end
+    
+    subgraph AppInternals["Service Architecture per Instance"]
+        Router["Route Handlers<br/>/links, /users, /events"]
+        Controller["Controllers<br/>Input Validation<br/>Pydantic Schemas"]
+        Service["Business Logic<br/>URL Service<br/>User Service<br/>Event Service"]
+        Repo["Repository Layer<br/>Data Access<br/>Query Building"]
+    end
+    
+    subgraph DataLayer["Data & Caching Layer"]
+        PG["PostgreSQL 16<br/>Primary Database<br/>Port 5432<br/>Peewee ORM<br/>Connection Pool: 20 per instance"]
+        Redis["Redis 7<br/>Optional Caching<br/>Port 6379<br/>Default TTL: 300s<br/>Hot Data Cache"]
+        Storage["Persistent Storage<br/>Database Volume<br/>100GB Capacity"]
+    end
+    
+    subgraph Monitoring["Observability Stack"]
+        Prom["Prometheus<br/>Time-Series Metrics<br/>Port 9090<br/>Scrape Interval: 15s<br/>Retention: 15 days"]
+        Grafana["Grafana<br/>Dashboards<br/>Port 3000<br/>Visualization<br/>Alerting UI"]
+        AlertMgr["AlertManager<br/>Alert Routing<br/>Deduplication<br/>Webhook/Email/PagerDuty"]
+    end
+    
+    subgraph Exporters["Metrics Collection"]
+        AppMetrics["App Metrics<br/>:8000/metrics<br/>Request counts/latency<br/>DB pool status"]
+        cAdvisor["cAdvisor<br/>Container CPU/Memory<br/>Network I/O<br/>Disk Usage"]
+        NodeExp["node_exporter<br/>Host System Metrics<br/>CPU temperature<br/>Filesystem info"]
+        PGExp["postgres_exporter<br/>Database Metrics<br/>Connection counts<br/>Query times"]
+        RedisExp["redis_exporter<br/>Redis Metrics<br/>Memory usage<br/>Hit/miss rates"]
+    end
+    
+    Desktop -->|HTTP Request| Nginx
+    Bot -->|HTTP Request| Nginx
+    
+    Nginx -->|Route /api/v1/*| Flask1
+    Nginx -->|Route /api/v1/*| Flask2
+    Nginx -->|Load Balance| Flask2
+    Nginx -->|Route /*| NextJS
+    
+    Flask1 --> Router
+    Flask2 --> Router
+    Router --> Controller
+    Controller --> Service
+    Service --> Repo
+    
+    Repo -->|Read/Write| PG
+    Repo -.->|GET Cache| Redis
+    Repo -.->|SET Cache| Redis
+    
+    PG --> Storage
+    
+    Flask1 -->|Expose Metrics| AppMetrics
+    Flask2 -->|Expose Metrics| AppMetrics
+    
+    AppMetrics --> Prom
+    cAdvisor --> Prom
+    NodeExp --> Prom
+    PGExp --> Prom
+    RedisExp --> Prom
+    
+    Prom -->|Query via API| Grafana
+    Prom -->|Evaluate Rules| AlertMgr
+    AlertMgr -->|Fire Alerts| Grafana
+    Grafana -->|Display Dashboard| Desktop
+    
+    NextJS -->|API Calls| Flask1
+    NextJS -->|API Calls| Flask2
+    
+    Nginx -.->|Send Metrics| AppMetrics
+    
+    style Desktop fill:#bbdefb,stroke:#1976d2,stroke-width:2px
+    style Bot fill:#bbdefb,stroke:#1976d2,stroke-width:2px
+    style Nginx fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    style NextJS fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+    style Flask1 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style Flask2 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style Router fill:#e1bee7
+    style Controller fill:#e1bee7
+    style Service fill:#e1bee7
+    style Repo fill:#e1bee7
+    style PG fill:#ffccbc,stroke:#d84315,stroke-width:2px
+    style Redis fill:#ffe0b2,stroke:#f57c00,stroke-width:2px
+    style Storage fill:#ffccbc
+    style Prom fill:#ffecb3,stroke:#f9a825,stroke-width:2px
+    style Grafana fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+    style AlertMgr fill:#ffccbc,stroke:#d84315,stroke-width:2px
+    style AppMetrics fill:#fff59d
+    style cAdvisor fill:#fff59d
+    style NodeExp fill:#fff59d
+    style PGExp fill:#fff59d
+    style RedisExp fill:#fff59d
+
