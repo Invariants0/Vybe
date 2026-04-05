@@ -18,6 +18,10 @@ def _get_service():
 def follow_short_link(code):
     destination = _get_service().resolve_redirect(code)
     if not destination:
-        return jsonify({"error": "not_found", "message": "Link not found or inactive"}), 404
-        
-    return redirect(destination, code=current_app.config["DEFAULT_REDIRECT_STATUS_CODE"])
+        return jsonify(
+            {"error": "not_found", "message": "Link not found or inactive"}
+        ), 404
+
+    return redirect(
+        destination, code=current_app.config["DEFAULT_REDIRECT_STATUS_CODE"]
+    )

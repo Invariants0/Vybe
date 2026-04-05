@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 def test_metrics_endpoint_exposes_prometheus_format(client):
     client.get("/health")
 

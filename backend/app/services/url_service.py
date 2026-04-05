@@ -66,7 +66,9 @@ class UrlService:
     def get_url_by_code(self, short_code: str) -> Optional[ShortURL]:
         return self.repo.find_by_code(short_code)
 
-    def list_urls(self, user_id: Optional[int] = None, is_active: Optional[bool] = None) -> List[ShortURL]:
+    def list_urls(
+        self, user_id: Optional[int] = None, is_active: Optional[bool] = None
+    ) -> List[ShortURL]:
         filters = {}
         if user_id:
             filters["user_id"] = user_id
@@ -118,11 +120,11 @@ class UrlService:
         if cached_raw:
             try:
                 data = json.loads(cached_raw)
-                
+
                 # Check active status from cache if present
                 if not data.get("is_active", True):
                     raise ForbiddenError("URL has been deactivated.")
-                
+
                 uid = data.get("user_id")
                 cached_url_obj = _CachedURL(
                     id=data["id"],
@@ -135,13 +137,15 @@ class UrlService:
             except ForbiddenError:
                 raise
             except Exception:
-                logger.warning("Corrupt cache entry for short_code=%s, evicting.", short_code)
+                logger.warning(
+                    "Corrupt cache entry for short_code=%s, evicting.", short_code
+                )
                 cache_delete(f"shorturl:{short_code}", self.config)
 
         short_url = self.get_url_by_code(short_code)
         if not short_url:
             raise NotFoundError("URL not found.")
-        
+
         if not short_url.is_active:
             # Cache the deactivated state to prevent DB hammers
             self._cache_short_url(short_url)
@@ -151,15 +155,14 @@ class UrlService:
         self._cache_short_url(short_url)
         return short_url.original_url
 
-
-
-
     def _generate_unique_code(self) -> str:
         for _ in range(10):
             code = generate_short_code(self.short_code_length)
             if not self.repo.find_by_code(code):
                 return code
-        raise IntegrityError("Could not generate a unique short code after 10 attempts.")
+        raise IntegrityError(
+            "Could not generate a unique short code after 10 attempts."
+        )
 
     def _get_cached_raw(self, short_code: str) -> Optional[str]:
         return cache_get(f"shorturl:{short_code}", self.config)

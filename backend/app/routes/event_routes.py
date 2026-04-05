@@ -21,6 +21,7 @@ def get_controller():
 def list_events():
     return get_controller().list_events(request)
 
+
 @events_bp.post("")
 @limiter.limit(lambda: current_app.config.get("RATE_LIMIT_WRITE", "120 per minute"))
 def create_event():

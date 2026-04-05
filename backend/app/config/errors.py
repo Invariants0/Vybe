@@ -62,12 +62,17 @@ def register_error_handlers(app):
 
     @app.errorhandler(404)
     def _handle_404(_error):
-        return jsonify(error="not_found", message="The requested resource was not found."), 404
+        return jsonify(
+            error="not_found", message="The requested resource was not found."
+        ), 404
 
     @app.errorhandler(405)
     def _handle_405(_error):
         return (
-            jsonify(error="method_not_allowed", message="The requested HTTP method is not supported."),
+            jsonify(
+                error="method_not_allowed",
+                message="The requested HTTP method is not supported.",
+            ),
             405,
         )
 

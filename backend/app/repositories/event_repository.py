@@ -12,6 +12,7 @@ class EventRepository(BaseRepository[Event]):
     def list_for_url(self, url_id: int, skip: int = 0, limit: int = 100) -> List[Event]:
         # List events for a URL with prefetched FKs to avoid N+1 queries
         from peewee import JOIN
+
         return list(
             Event.select(Event, ShortURL, User)
             .join(ShortURL, on=(Event.url_id == ShortURL.id))
@@ -29,10 +30,11 @@ class EventRepository(BaseRepository[Event]):
         user_id: int = None,
         event_type: str = None,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> List[Event]:
         """List events with optional filters on url_id, user_id, and event_type."""
         from peewee import JOIN
+
         query = (
             Event.select(Event, ShortURL, User)
             .join(ShortURL, on=(Event.url_id == ShortURL.id))
@@ -47,7 +49,9 @@ class EventRepository(BaseRepository[Event]):
             query = query.where(Event.event_type == event_type)
         return list(query.order_by(Event.id).offset(skip).limit(limit))
 
-    def get_all(self, skip: int = 0, limit: int = 100, order_by=None, **filters) -> List[Event]:
+    def get_all(
+        self, skip: int = 0, limit: int = 100, order_by=None, **filters
+    ) -> List[Event]:
         """
         Override base get_all to prefetch FKs and avoid N+1 queries.
 
@@ -55,6 +59,7 @@ class EventRepository(BaseRepository[Event]):
         (one for each event.url_id.id and event.user_id.id Peewee lazy-load).
         """
         from peewee import JOIN
+
         query = (
             Event.select(Event, ShortURL, User)
             .join(ShortURL, on=(Event.url_id == ShortURL.id))
@@ -67,7 +72,9 @@ class EventRepository(BaseRepository[Event]):
             query = query.where(getattr(Event, key) == value)
         return list(query.offset(skip).limit(limit))
 
-    def log_event(self, url: ShortURL, event_type: str, user: User | None = None) -> Event:
+    def log_event(
+        self, url: ShortURL, event_type: str, user: User | None = None
+    ) -> Event:
         details = json.dumps(
             {
                 "short_code": url.short_code,

@@ -8,7 +8,7 @@ from backend.app.config.errors import AppError
 def test_404_error_handler(client):
     """Test 404 error handler for non-existent routes."""
     response = client.get("/nonexistent-route")
-    
+
     assert response.status_code == 404
     data = response.get_json()
     assert data["error"] == "not_found"
@@ -18,7 +18,7 @@ def test_404_error_handler(client):
 def test_405_method_not_allowed(client):
     """Test 405 error handler for method not allowed."""
     response = client.post("/health")
-    
+
     assert response.status_code == 405
     data = response.get_json()
     assert data["error"] == "method_not_allowed"
@@ -26,6 +26,7 @@ def test_405_method_not_allowed(client):
 
 def test_app_error_handler(app):
     """Test custom AppError handler."""
+
     @app.get("/app-error")
     def app_error():
         raise AppError("broken", status_code=409, error_code="conflict")
@@ -41,7 +42,7 @@ def test_app_error_handler(app):
 def test_validation_error_with_details(client):
     """Test validation error returns proper details."""
     response = client.post("/users", json={"username": "test", "email": "invalid"})
-    
+
     assert response.status_code == 422
     data = response.get_json()
     assert data["error"] == "validation_error"
@@ -52,7 +53,7 @@ def test_validation_error_with_details(client):
 def test_not_found_error(client):
     """Test not found error for non-existent resources."""
     response = client.get("/users/999999")
-    
+
     assert response.status_code == 404
     data = response.get_json()
     assert data["error"] == "not_found"
@@ -60,6 +61,7 @@ def test_not_found_error(client):
 
 def test_bad_request_handler(app):
     """Test bad request error handler."""
+
     @app.get("/bad-request")
     def bad_request():
         raise BadRequest("invalid json")
@@ -77,9 +79,9 @@ def test_bad_request_malformed_json(client):
     response = client.post(
         "/users",
         data='{"username": "test", "email": "test@example.com",}',
-        content_type='application/json'
+        content_type="application/json",
     )
-    
+
     assert response.status_code == 400
     data = response.get_json()
     assert "error" in data or "message" in data

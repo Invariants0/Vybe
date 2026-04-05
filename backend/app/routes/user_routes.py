@@ -22,23 +22,28 @@ def get_controller():
 def create_user():
     return get_controller().create_user(request)
 
+
 @users_bp.get("")
 def list_users():
     return get_controller().list_users(request)
 
+
 @users_bp.get("/<int:user_id>")
 def get_user(user_id):
     return get_controller().get_user(user_id)
+
 
 @users_bp.put("/<int:user_id>")
 @limiter.limit(lambda: current_app.config.get("RATE_LIMIT_WRITE", "120 per minute"))
 def update_user(user_id):
     return get_controller().update_user(user_id, request)
 
+
 @users_bp.delete("/<int:user_id>")
 @limiter.limit(lambda: current_app.config.get("RATE_LIMIT_WRITE", "120 per minute"))
 def delete_user(user_id):
     return get_controller().delete_user(user_id)
+
 
 @users_bp.post("/bulk")
 @limiter.limit(lambda: current_app.config.get("RATE_LIMIT_WRITE", "120 per minute"))

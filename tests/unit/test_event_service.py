@@ -25,7 +25,9 @@ def test_create_event_requires_event_type():
 def test_create_event_requires_existing_short_url():
     service = EventService(repo=MagicMock())
 
-    with patch("backend.app.services.event_service.ShortURL.get_or_none", return_value=None):
+    with patch(
+        "backend.app.services.event_service.ShortURL.get_or_none", return_value=None
+    ):
         with pytest.raises(ValueError, match="URL with id 1 does not exist"):
             service.create_event(url_id=1, event_type="created")
 
@@ -39,8 +41,13 @@ def test_create_event_serializes_details_and_saves():
     short_url.short_code = "abc123"
     short_url.original_url = "https://example.com"
 
-    with patch("backend.app.services.event_service.ShortURL.get_or_none", return_value=short_url):
-        result = service.create_event(url_id=1, event_type="created", user_id=7, details={"source": "manual"})
+    with patch(
+        "backend.app.services.event_service.ShortURL.get_or_none",
+        return_value=short_url,
+    ):
+        result = service.create_event(
+            url_id=1, event_type="created", user_id=7, details={"source": "manual"}
+        )
 
     assert result is created_event
     repo.create.assert_called_once()

@@ -98,7 +98,9 @@ class TestEventServiceCoverage:
 
         service = EventService(repo=event_repo)
 
-        service.list_events(url_id=1, user_id=2, event_type="created", page=2, per_page=25)
+        service.list_events(
+            url_id=1, user_id=2, event_type="created", page=2, per_page=25
+        )
 
         event_repo.list_filtered.assert_called_once_with(
             url_id=1,

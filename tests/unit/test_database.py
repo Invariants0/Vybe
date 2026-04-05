@@ -23,11 +23,16 @@ def test_get_pool_snapshot_reads_pool_state():
 
 
 def test_record_pool_metrics_updates_prometheus_gauges():
-    with patch("backend.app.config.database.DB_POOL_CONNECTIONS_OPEN.set") as set_open, patch(
-        "backend.app.config.database.DB_POOL_CONNECTIONS_IN_USE.set"
-    ) as set_in_use, patch("backend.app.config.database.DB_POOL_MAX_CONNECTIONS.set") as set_max, patch(
-        "backend.app.config.database.get_pool_snapshot",
-        return_value={"open": 4, "in_use": 2, "max": 12},
+    with (
+        patch("backend.app.config.database.DB_POOL_CONNECTIONS_OPEN.set") as set_open,
+        patch(
+            "backend.app.config.database.DB_POOL_CONNECTIONS_IN_USE.set"
+        ) as set_in_use,
+        patch("backend.app.config.database.DB_POOL_MAX_CONNECTIONS.set") as set_max,
+        patch(
+            "backend.app.config.database.get_pool_snapshot",
+            return_value={"open": 4, "in_use": 2, "max": 12},
+        ),
     ):
         snapshot = database.record_pool_metrics()
 
@@ -41,7 +46,10 @@ def test_ping_db_connects_when_closed():
     fake_db = MagicMock()
     fake_db.is_closed.return_value = True
 
-    with patch.object(database, "db", fake_db), patch("backend.app.config.database.record_pool_metrics"):
+    with (
+        patch.object(database, "db", fake_db),
+        patch("backend.app.config.database.record_pool_metrics"),
+    ):
         database.ping_db()
 
     fake_db.connect.assert_called_once_with(reuse_if_open=True)

@@ -4,6 +4,7 @@ from flask import current_app, g, jsonify
 
 try:
     import sentry_sdk
+
     SENTRY_AVAILABLE = True
 except ImportError:
     SENTRY_AVAILABLE = False
@@ -32,12 +33,14 @@ class BaseController:
                 detail = {
                     "loc": list(err.get("loc", [])),
                     "msg": err.get("msg", ""),
-                    "type": err.get("type", "")
+                    "type": err.get("type", ""),
                 }
                 if "input" in err:
                     detail["input"] = str(err["input"])
                 details.append(detail)
-            return jsonify({"error": "validation_error", "message": msg, "details": details}), 422
+            return jsonify(
+                {"error": "validation_error", "message": msg, "details": details}
+            ), 422
 
         # We'll map some known exceptions to nice JSON responses
         if error_type == "ValidationError":

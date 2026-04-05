@@ -60,9 +60,18 @@ def app():
             return jsonify({"error": "bad_request", "message": "Invalid JSON"}), 400
         try:
             CreateUserSchema(**data)
-            return jsonify({"id": 1, "username": data.get("username"), "email": data.get("email")}), 201
+            return jsonify(
+                {"id": 1, "username": data.get("username"), "email": data.get("email")}
+            ), 201
         except ValidationError as e:
-            errors = [{"loc": err.get("loc", []), "msg": err.get("msg", ""), "type": err.get("type", "")} for err in e.errors()]
+            errors = [
+                {
+                    "loc": err.get("loc", []),
+                    "msg": err.get("msg", ""),
+                    "type": err.get("type", ""),
+                }
+                for err in e.errors()
+            ]
             return jsonify({"error": "validation_error", "details": errors}), 422
 
     return app

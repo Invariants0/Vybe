@@ -10,7 +10,11 @@ from backend.app.repositories.user_repository import UserRepository
 
 
 class UserService:
-    def __init__(self, config: Optional[Dict[str, Any]] = None, user_repo: Optional[UserRepository] = None):
+    def __init__(
+        self,
+        config: Optional[Dict[str, Any]] = None,
+        user_repo: Optional[UserRepository] = None,
+    ):
         self.config = config or {}
         self.repo = user_repo or UserRepository()
 
@@ -30,12 +34,14 @@ class UserService:
         skip = (page - 1) * per_page
         return self.repo.get_all(skip=skip, limit=per_page, order_by=User.id)
 
-    def update_user(self, user_id: int, data: Dict[str, Any] = None, **kwargs) -> Optional[User]:
+    def update_user(
+        self, user_id: int, data: Dict[str, Any] = None, **kwargs
+    ) -> Optional[User]:
         if data is None:
             data = kwargs
         else:
             data = {**data, **kwargs}
-            
+
         updates = {}
         if "username" in data:
             updates["username"] = data["username"]
@@ -60,7 +66,7 @@ class UserService:
                 raw_created_at = row.get("created_at", "").strip()
                 if raw_created_at.endswith("x"):
                     raw_created_at = raw_created_at[:-1]
-                
+
                 try:
                     created_at = datetime.strptime(raw_created_at, "%Y-%m-%d %H:%M:%S")
                 except ValueError:
@@ -70,16 +76,16 @@ class UserService:
                     user_id=int(row["id"]),
                     username=row["username"],
                     email=row["email"],
-                    created_at=created_at
+                    created_at=created_at,
                 )
                 imported_count += 1
             except (KeyError, ValueError, IntegrityError):
                 continue
 
-
         if imported_count > 0:
             try:
                 from backend.app.config.database import db
+
                 db.execute_sql(
                     "SELECT setval(pg_get_serial_sequence('users', 'id'), "
                     "(SELECT MAX(id) FROM users))"

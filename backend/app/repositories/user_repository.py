@@ -14,13 +14,11 @@ class UserRepository(BaseRepository[User]):
     def find_by_username(self, username: str) -> User | None:
         return self.get_one(username=username)
 
-    def get_or_create_for_import(self, user_id: int, username: str, email: str, created_at: datetime) -> User:
+    def get_or_create_for_import(
+        self, user_id: int, username: str, email: str, created_at: datetime
+    ) -> User:
         user, _ = User.get_or_create(
             id=user_id,
-            defaults={
-                "username": username,
-                "email": email,
-                "created_at": created_at
-            }
+            defaults={"username": username, "email": email, "created_at": created_at},
         )
         return user
