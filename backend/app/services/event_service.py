@@ -1,4 +1,3 @@
-import json
 from typing import Any, Dict, List, Optional
 
 from backend.app.models import Event, ShortURL, User
@@ -18,7 +17,6 @@ class EventService:
         page: int = 1,
         per_page: int = 50
     ) -> List[Event]:
-        """List all events, optionally filtered by url_id, user_id, or event_type."""
         skip = (page - 1) * per_page
         return self.repo.list_filtered(
             url_id=url_id,
@@ -35,13 +33,11 @@ class EventService:
         user_id: Optional[int] = None,
         details: Optional[Dict] = None
     ) -> Event:
-        """Manually create an event (for POST /events)."""
         if not url_id:
             raise ValueError("url_id is required")
         if not event_type:
             raise ValueError("event_type is required")
 
-        # Get the ShortURL to fill in details
         short_url = ShortURL.get_or_none(ShortURL.id == url_id)
         if not short_url:
             raise ValueError(f"URL with id {url_id} does not exist")
@@ -59,7 +55,6 @@ class EventService:
 
     @staticmethod
     def serialize_event(event: Event) -> Dict[str, Any]:
-        """Convert Event model to API-friendly dictionary."""
         return {
             "id": event.id,
             "url_id": event.url_id.id,
@@ -69,4 +64,3 @@ class EventService:
             "timestamp": event.timestamp.isoformat(),
             "details": event.get_details()
         }
-

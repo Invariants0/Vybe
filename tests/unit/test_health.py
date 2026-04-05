@@ -1,5 +1,3 @@
-import pytest
-
 # Uses 'client' fixture from parent conftest.py (PostgreSQL testcontainer)
 
 

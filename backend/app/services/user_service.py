@@ -76,9 +76,7 @@ class UserService:
             except (KeyError, ValueError, IntegrityError):
                 continue
 
-        # After bulk-importing rows with explicit IDs, PostgreSQL's sequence
-        # is still at its pre-import value. Reset it to max(id) so that the
-        # next auto-generated INSERT does not collide with an existing CSV row.
+
         if imported_count > 0:
             try:
                 from backend.app.config.database import db

@@ -1,4 +1,3 @@
-import json
 from pydantic import ValidationError
 
 from backend.app.controllers.base_controller import BaseController

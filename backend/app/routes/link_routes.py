@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, jsonify, redirect, request
+from flask import Blueprint, current_app, jsonify, redirect
 
 from backend.app.services.url_service import UrlService
 

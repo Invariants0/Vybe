@@ -1,4 +1,3 @@
-import json
 import logging
 from collections import namedtuple
 from typing import Any, Dict, List, Optional

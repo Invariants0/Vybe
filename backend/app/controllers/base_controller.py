@@ -1,6 +1,6 @@
 import logging
 
-from flask import current_app, g, jsonify
+from flask import current_app, jsonify
 
 try:
     import sentry_sdk

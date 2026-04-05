@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 """
-MLH Evaluator Mirror Test Suite
-================================
-Mirrors the exact MLH evaluation tests from mlh-submit-result-1.md.
-Uses the ACTUAL seeded CSV files from backend/data/ — the same ones the evaluator uses.
-
 Usage:
     python scripts/automated_test.py [BASE_URL]
 
@@ -13,7 +8,6 @@ Usage:
 """
 
 import io
-import json
 import os
 import sys
 import time
@@ -21,7 +15,6 @@ import requests
 
 BASE_URL = sys.argv[1].rstrip("/") if len(sys.argv) > 1 else "http://localhost:80"
 
-# Locate the actual data files relative to this script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, "..", "backend", "data")
 USERS_CSV = os.path.join(DATA_DIR, "users.csv")
@@ -43,7 +36,6 @@ def req(method, path, **kwargs):
 
 
 def has_response(resp):
-    # requests.Response is falsy for 4xx/5xx, but those are still valid HTTP responses.
     return resp is not None
 
 
@@ -61,9 +53,6 @@ def section(title):
     print(f"{'='*60}")
 
 
-# ─────────────────────────────────────────────────────────────
-# HEALTH
-# ─────────────────────────────────────────────────────────────
 section("HEALTH")
 
 r = req("GET", "/health")
@@ -77,12 +66,8 @@ else:
     check("test_health_check", False, "No response")
 
 
-# ─────────────────────────────────────────────────────────────
-# USERS
-# ─────────────────────────────────────────────────────────────
 section("USERS")
 
-# test_load_users_csv — POST /users/bulk with the REAL users.csv (400 rows)
 print(f"\n  [INFO] Using real CSV: {USERS_CSV}")
 if not os.path.exists(USERS_CSV):
     print(f"  [ERROR] users.csv not found at {USERS_CSV}")
@@ -101,15 +86,12 @@ bulk_ok = False
 if has_response(r):
     bulk_ok = r.status_code in (200, 201)
     body = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
-    # The evaluator expects 400 rows imported
-    # Accept either count=400 or imported=400 or just a 200/201 status
     check("test_load_users_csv",
           bulk_ok,
           f"status={r.status_code}, body={r.text[:300]}")
 else:
     check("test_load_users_csv", False, "No response")
 
-# test_get_users_list — GET /users — expect at least 1 item
 r = req("GET", "/users")
 if has_response(r):
     ok = r.status_code == 200
@@ -121,7 +103,6 @@ if has_response(r):
 else:
     check("test_get_users_list", False, "No response")
 
-# test_get_users_pagination — GET /users?page=1&per_page=10 — expect exactly 10
 r = req("GET", "/users", params={"page": 1, "per_page": 10})
 if has_response(r):
     ok = r.status_code == 200
@@ -133,7 +114,6 @@ if has_response(r):
 else:
     check("test_get_users_pagination", False, "No response")
 
-# test_get_user_by_id — GET /users/1 — user from the seeded CSV, id=1 is "quietpioneer19"
 r = req("GET", "/users/1")
 if has_response(r):
     ok = r.status_code == 200
@@ -144,7 +124,6 @@ if has_response(r):
 else:
     check("test_get_user_by_id", False, "No response")
 
-# test_create_user — POST /users with exact MLH evaluator input
 user_suffix = int(time.time() * 1000)
 create_username = f"testuser_create_{user_suffix}"
 create_email = f"{create_username}@example.com"
@@ -163,7 +142,6 @@ if has_response(r):
 else:
     check("test_create_user", False, "No response")
 
-# test_update_user — PUT /users/1
 r = req("PUT", "/users/1", json={"username": "updated_username"})
 if has_response(r):
     ok = r.status_code == 200
@@ -174,7 +152,6 @@ if has_response(r):
 else:
     check("test_update_user", False, "No response")
 
-# test_delete_user — DELETE /users/200
 r = req("DELETE", "/users/200")
 if has_response(r):
     check("test_delete_user",
@@ -183,7 +160,6 @@ if has_response(r):
 else:
     check("test_delete_user", False, "No response")
 
-# test_get_nonexistent_user — GET /users/99999 → expect 404
 r = req("GET", "/users/99999")
 if has_response(r):
     check("test_get_nonexistent_user",
@@ -193,9 +169,7 @@ else:
     check("test_get_nonexistent_user", False, "No response")
 
 
-# ─────────────────────────────────────────────────────────────
-# URLS
-# ─────────────────────────────────────────────────────────────
+#  URLS --------- >>>
 section("URLS")
 
 # test_create_url — user_id=1 (quietpioneer19 from CSV)
@@ -214,7 +188,6 @@ if has_response(r):
 else:
     check("test_create_url", False, "No response")
 
-# test_get_urls_list — GET /urls
 r = req("GET", "/urls")
 if has_response(r):
     ok = r.status_code == 200
@@ -225,7 +198,6 @@ if has_response(r):
 else:
     check("test_get_urls_list", False, "No response")
 
-# test_get_url_by_id — GET /urls/1 (should exist after create)
 target_url_id = created_url_id or 1
 r = req("GET", f"/urls/{target_url_id}")
 if has_response(r):
@@ -237,7 +209,6 @@ if has_response(r):
 else:
     check("test_get_url_by_id", False, "No response")
 
-# test_get_urls_by_user — GET /urls?user_id=1
 r = req("GET", "/urls", params={"user_id": 1})
 if has_response(r):
     ok = r.status_code == 200
@@ -248,7 +219,6 @@ if has_response(r):
 else:
     check("test_get_urls_by_user", False, "No response")
 
-# test_redirect_short_code — create a URL then redirect
 r = req("POST", "/urls",
         json={"original_url": "https://example.com/redirect-target", "title": "Redirect Test", "user_id": 1})
 if has_response(r) and r.status_code == 201:
@@ -309,12 +279,9 @@ else:
     check("test_delete_url", False, "No response")
 
 
-# ─────────────────────────────────────────────────────────────
-# EVENTS
-# ─────────────────────────────────────────────────────────────
+# Events --------------------- >>>
 section("EVENTS")
 
-# test_get_events_list — GET /events
 r = req("GET", "/events")
 if has_response(r):
     ok = r.status_code == 200
@@ -377,9 +344,7 @@ else:
     check("test_create_event", False, "No response")
 
 
-# ─────────────────────────────────────────────────────────────
-# SUMMARY
-# ─────────────────────────────────────────────────────────────
+# Summary ------------------------------ >>>
 total = len(results)
 passed = sum(1 for _, ok, _ in results if ok)
 failed = total - passed

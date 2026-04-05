@@ -61,6 +61,7 @@ def get_client(config: Optional[dict[str, Any]] = None) -> Optional["redis.Redis
         return _client
     except Exception as e:
         logger.error("Redis connection failed: %s", e, exc_info=True)
+        global _client
         _client = None  # Don't cache a broken client
         return None
 

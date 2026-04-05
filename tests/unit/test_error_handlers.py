@@ -1,6 +1,3 @@
-import pytest
-
-
 class TestErrorHandlers:
     
     def test_404_error_handler(self, client):
