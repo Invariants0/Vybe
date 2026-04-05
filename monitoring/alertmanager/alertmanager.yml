@@ -2,7 +2,7 @@ global:
   resolve_timeout: 5m
   # NOTE: Alert webhook (Discord uses Slack-compatible webhook format)
   # Alertmanager requires these keys to be named "slack_*" even for Discord
-  slack_api_url: "https://discord.com/api/webhooks/1490023453212938353/7GojR7ehPDNfJ3Jx74E-FUhf7cnCl193pMFNsubhhlqfRyS_A4GI-TbNNPTP8GjazSOY"
+  slack_api_url: "${DISCORD_WEBHOOK_URL}"
 
 route:
   group_by:
@@ -14,19 +14,10 @@ route:
   receiver: discord_notifications
 
 receivers:
-  # Discord webhook receiver (sends to Discord #alerts channel)
+  # Discord webhook receiver (via proxy that transforms payload format)
   - name: discord_notifications
-    slack_configs:
-      - api_url: "https://discord.com/api/webhooks/1490023453212938353/7GojR7ehPDNfJ3Jx74E-FUhf7cnCl193pMFNsubhhlqfRyS_A4GI-TbNNPTP8GjazSOY/slack"
-        channel: "#alerts"
-        title: "[{{ .Status | toUpper }}] {{ .GroupLabels.alertname }}"
-        text: |
-          {{ range .Alerts }}
-          *Alert:* {{ .Annotations.summary }}
-          *Description:* {{ .Annotations.description }}
-          *Severity:* {{ .Labels.severity }}
-          *Instance:* {{ .Labels.instance }}
-          {{ end }}
+    webhook_configs:
+      - url: "http://webhook_proxy:5001/webhook"
         send_resolved: true
 
 inhibit_rules:

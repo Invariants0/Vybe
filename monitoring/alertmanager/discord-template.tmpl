@@ -1,0 +1,9 @@
+{{ define "discord.default.message" }}
+{{ range .Alerts }}
+**[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:🔥{{ end }}] {{ .Labels.alertname }}**
+{{ if .Labels.severity }}**Severity:** {{ .Labels.severity }}{{ end }}
+{{ if .Labels.instance }}**Instance:** {{ .Labels.instance }}{{ end }}
+{{ if .Annotations.summary }}**Summary:** {{ .Annotations.summary }}{{ end }}
+{{ if .Annotations.description }}**Description:** {{ .Annotations.description }}{{ end }}
+{{ end }}
+{{ end }}

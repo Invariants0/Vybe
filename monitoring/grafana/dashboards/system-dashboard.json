@@ -5,7 +5,7 @@
     {"type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0"}
   ],
   "annotations": {"list": []},
-  "description": "Vybe System Dashboard - Latency, Traffic, Errors, Saturation",
+  "description": "Vybe System Dashboard - Complete Observability (Golden Signals + System + Database)",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -34,7 +34,7 @@
     },
     {
       "id": 2,
-      "title": "Request Latency P95 (seconds)",
+      "title": "Request Latency (P50 / P95)",
       "type": "timeseries",
       "datasource": {"type": "prometheus", "uid": "prometheus"},
       "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
@@ -59,22 +59,37 @@
     },
     {
       "id": 3,
-      "title": "Error Rate",
+      "title": "Error Rate (4xx vs 5xx)",
       "type": "timeseries",
       "datasource": {"type": "prometheus", "uid": "prometheus"},
       "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
       "targets": [
         {
-          "expr": "sum(rate(http_errors_total[1m])) by (instance, status)",
-          "legendFormat": "{{instance}} HTTP {{status}}",
+          "expr": "sum(rate(http_errors_total{status=~\"5..\"}[1m])) by (instance)",
+          "legendFormat": "5xx {{instance}}",
           "refId": "A"
+        },
+        {
+          "expr": "sum(rate(http_errors_total{status=~\"4..\"}[1m])) by (instance)",
+          "legendFormat": "4xx {{instance}}",
+          "refId": "B"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "reqps",
-          "color": {"mode": "fixed", "fixedColor": "red"}
-        }
+          "color": {"mode": "palette-classic"}
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byRegexp", "options": "5xx.*"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+          },
+          {
+            "matcher": {"id": "byRegexp", "options": "4xx.*"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}}]
+          }
+        ]
       }
     },
     {
@@ -86,7 +101,7 @@
       "targets": [
         {
           "expr": "http_requests_in_progress",
-          "legendFormat": "{{instance}} in-flight",
+          "legendFormat": "{{instance}}",
           "refId": "A"
         }
       ],
@@ -99,47 +114,306 @@
     },
     {
       "id": 5,
-      "title": "Total Requests",
-      "type": "stat",
+      "title": "CPU Usage per Container (%)",
+      "type": "timeseries",
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 16},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
       "targets": [
         {
-          "expr": "sum(http_requests_total)",
-          "legendFormat": "Total",
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\"vybe_app.*\"}[5m]) * 100",
+          "legendFormat": "{{name}}",
           "refId": "A"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=\"vybe_db\"}[5m]) * 100",
+          "legendFormat": "{{name}}",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=\"vybe_redis\"}[5m]) * 100",
+          "legendFormat": "{{name}}",
+          "refId": "C"
         }
       ],
       "fieldConfig": {
-        "defaults": {"unit": "short"}
+        "defaults": {
+          "unit": "percent",
+          "color": {"mode": "palette-classic"},
+          "max": 100
+        }
       }
     },
     {
       "id": 6,
-      "title": "Total Errors",
-      "type": "stat",
+      "title": "Memory Usage per Container (MB)",
+      "type": "timeseries",
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 16},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
       "targets": [
         {
-          "expr": "sum(http_errors_total)",
-          "legendFormat": "Errors",
+          "expr": "container_memory_usage_bytes{name=~\"vybe_app.*\"} / 1024 / 1024",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        },
+        {
+          "expr": "container_memory_usage_bytes{name=\"vybe_db\"} / 1024 / 1024",
+          "legendFormat": "{{name}}",
+          "refId": "B"
+        },
+        {
+          "expr": "container_memory_usage_bytes{name=\"vybe_redis\"} / 1024 / 1024",
+          "legendFormat": "{{name}}",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decmbytes",
+          "color": {"mode": "palette-classic"}
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Database Connections",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+      "targets": [
+        {
+          "expr": "sum(pg_stat_database_numbackends)",
+          "legendFormat": "Active Connections",
+          "refId": "A"
+        },
+        {
+          "expr": "pg_settings_max_connections",
+          "legendFormat": "Max Connections",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {"mode": "palette-classic"}
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "Max Connections"},
+            "properties": [
+              {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}},
+              {"id": "custom.fillOpacity", "value": 0}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "title": "Redis Memory Usage",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+      "targets": [
+        {
+          "expr": "redis_memory_used_bytes / 1024 / 1024",
+          "legendFormat": "Used Memory (MB)",
+          "refId": "A"
+        },
+        {
+          "expr": "redis_memory_max_bytes / 1024 / 1024",
+          "legendFormat": "Max Memory (MB)",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decmbytes",
+          "color": {"mode": "palette-classic"}
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Total Requests",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 32},
+      "targets": [
+        {
+          "expr": "sum(http_requests_total)",
           "refId": "A"
         }
       ],
       "fieldConfig": {
-        "defaults": {"unit": "short", "color": {"mode": "fixed", "fixedColor": "red"}}
+        "defaults": {
+          "unit": "short",
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Total Errors",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 4, "w": 4, "x": 4, "y": 32},
+      "targets": [
+        {
+          "expr": "sum(http_errors_total)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 100, "color": "yellow"},
+              {"value": 1000, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 11,
+      "title": "Error Rate %",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 4, "w": 4, "x": 8, "y": 32},
+      "targets": [
+        {
+          "expr": "sum(rate(http_errors_total[5m])) / sum(rate(http_requests_total[5m])) * 100",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 1, "color": "yellow"},
+              {"value": 5, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 12,
+      "title": "DB Connection Usage %",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 4, "w": 4, "x": 12, "y": 32},
+      "targets": [
+        {
+          "expr": "sum(pg_stat_database_numbackends) / pg_settings_max_connections * 100",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 70, "color": "yellow"},
+              {"value": 85, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 13,
+      "title": "Redis Hit Rate %",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 4, "w": 4, "x": 16, "y": 32},
+      "targets": [
+        {
+          "expr": "rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m])) * 100",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "red"},
+              {"value": 50, "color": "yellow"},
+              {"value": 80, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 14,
+      "title": "Instance Status",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 4, "w": 4, "x": 20, "y": 32},
+      "targets": [
+        {
+          "expr": "up{job=\"vybe\"}",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {"type": "value", "value": "0", "text": "DOWN"},
+            {"type": "value", "value": "1", "text": "UP"}
+          ],
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "red"},
+              {"value": 1, "color": "green"}
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"]
+        }
       }
     }
   ],
   "refresh": "10s",
   "schemaVersion": 38,
-  "tags": ["vybe", "backend"],
+  "tags": ["vybe", "backend", "observability"],
   "templating": {"list": []},
   "time": {"from": "now-1h", "to": "now"},
   "timepicker": {},
   "timezone": "browser",
   "title": "Vybe System Dashboard",
   "uid": "vybe-system",
-  "version": 1
+  "version": 2
 }
