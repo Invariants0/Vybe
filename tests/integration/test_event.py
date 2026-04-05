@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_event_logged_on_create(client):
     user_resp = client.post("/users", json={"username": "eventer", "email": "event@vybe.local"})
     user_id = user_resp.get_json()["id"]

@@ -23,7 +23,6 @@ def redis_container():
 
 @pytest.fixture(scope="session")
 def app(postgres_container):
-    """Initialize the Flask application configured for containerized testing."""
     test_db = PooledPostgresqlDatabase(
         postgres_container.dbname,
         host=postgres_container.get_container_host_ip(),
@@ -49,15 +48,17 @@ def app(postgres_container):
 
 @pytest.fixture(scope="function")
 def client(app):
-    """Provides a Flask test client for integration testing."""
     with app.test_client() as client:
         yield client
 
 
 @pytest.fixture(autouse=True)
 def clean_database(app, request):
-    """Ensure strict test isolation by truncating tables before each test execution."""
-    if "\\tests\\unit\\" in str(request.node.fspath):
+    # Ensure strict test isolation by truncating tables before each test execution.
+    # Skip for unit tests - use os.path to handle path separators correctly
+    import os
+    fspath = str(request.node.fspath)
+    if os.sep + "tests" + os.sep + "unit" + os.sep in fspath:
         yield
         return
 
@@ -75,7 +76,6 @@ def clean_database(app, request):
 
 @pytest.fixture(scope="function")
 def test_user(client):
-    """Bootstrap a standard test user for authenticated request flows."""
     response = client.post("/users", json={"username": "urltester", "email": "url@vybe.local"})
     return response.get_json()
 
@@ -91,4 +91,3 @@ def redis_config(redis_container):
         "REDIS_RETRY_BACKOFF_SECONDS": 0.01,
     }
     cache._client = None
-

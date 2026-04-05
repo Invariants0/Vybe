@@ -92,7 +92,7 @@ def _with_retry(
     for attempt in range(1, attempts + 1):
         try:
             return _execute_with_deadline(callback, config)
-        except FuturesTimeoutError as e:
+        except FuturesTimeoutError:
             last_error = TimeoutError(f"Redis {operation_name} exceeded operation deadline")
             logger.warning(
                 "Redis %s timed out for key=%s on attempt %s/%s",

@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-Alertmanager to Discord Webhook Proxy
-Transforms Alertmanager webhook payloads to Discord-compatible format
-"""
 
 from flask import Flask, request, jsonify
 import requests
@@ -88,9 +84,9 @@ def webhook():
         logger.error(f"Error processing webhook: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+
 @app.route('/health', methods=['GET'])
 def health():
-    """Health check endpoint"""
     return jsonify({"status": "healthy"}), 200
 
 if __name__ == '__main__':

@@ -1,7 +1,5 @@
 import json
 
-from pydantic import ValidationError
-
 from backend.app.controllers.base_controller import BaseController
 from backend.app.validators.schemas import CreateUrlSchema, UpdateUrlSchema
 from backend.app.utils.cache import cache_get, cache_set, cache_delete

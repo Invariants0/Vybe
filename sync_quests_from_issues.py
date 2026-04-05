@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""
-Sync Quest Progress from GitHub Issues
-
-Synchronizes checkbox progress from GitHub Issues (source of truth) 
-back to the local QUEST_TRACKER.md.
-"""
+# This is for local development only - not for production
 
 import subprocess
 import json
@@ -14,7 +9,6 @@ from typing import Dict, Tuple
 
 
 def get_issues_via_gh_cli() -> Dict[str, list]:
-    """Fetch quest issues labeled bronze, silver, or gold using GitHub CLI."""
     try:
         result = subprocess.run(
             [
@@ -38,14 +32,9 @@ def get_issues_via_gh_cli() -> Dict[str, list]:
 
 
 def extract_quest_tier_from_issue(issue: dict) -> Tuple[str, str, int, int]:
-    """
-    Extract quest metadata and checkbox progress from an issue body.
-    Returns: (quest_name, tier_name, checked_count, total_count)
-    """
     title = issue["title"]
     body = issue["body"]
 
-    # Expected format: "🛡️ Reliability Engineering — Bronze (The Shield)"
     emoji_match = re.search(r"([🛡️🚀🚨📜])\s+(.+?)\s+—\s+(.+)", title)
     if not emoji_match:
         return None, None, 0, 0
@@ -60,11 +49,9 @@ def extract_quest_tier_from_issue(issue: dict) -> Tuple[str, str, int, int]:
 
 
 def sync_quest_tracker(issues: list) -> str:
-    """Sync GitHub Issues progress to QUEST_TRACKER.md content."""
     quest_tracker_path = Path("QUEST_TRACKER.md")
     content = quest_tracker_path.read_text(encoding="utf-8")
 
-    # Group by Quest -> Tier -> (checked, total)
     quest_progress = {}
     for issue in issues:
         quest_name, tier_name, checked, total = extract_quest_tier_from_issue(issue)
