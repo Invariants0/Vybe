@@ -24,9 +24,7 @@ def follow_short_link(code):
             {"error": "gone", "message": "This link has been deactivated."}
         ), 410
     except NotFoundError:
-        return jsonify(
-            {"error": "not_found", "message": "Link not found."}
-        ), 404
+        return jsonify({"error": "not_found", "message": "Link not found."}), 404
 
     if not destination:
         return jsonify(
