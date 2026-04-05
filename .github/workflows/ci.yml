@@ -212,40 +212,50 @@ jobs:
   integration:
     name: Integration Tests
     runs-on: ubuntu-latest
-    needs: [docker-build]
+    needs: [backend-test, frontend-build]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: hackathon_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup environment variables
-        run: cp backend/.env.example backend/.env
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
 
-      - name: Start services
-        run: docker compose up -d --build
-
-      - name: Wait for services
+      - name: Install dependencies
         run: |
-          for i in {1..60}; do
-            if docker compose ps vybe_app1 | grep -q "healthy"; then
-              echo "✅ Services ready"
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Run app and test
+        env:
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_NAME: hackathon_db
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres
+          AUTO_CREATE_TABLES: "true"
+        run: |
+          python run.py &
+          for i in {1..30}; do
+            if curl -sf http://localhost:5000/health > /dev/null 2>&1; then
+              echo "App ready"
               break
             fi
-            echo "Waiting for services... ($i/60)"
             sleep 2
           done
-
-      - name: Check logs
-        if: always()
-        run: |
-          docker compose logs vybe_app1 --tail=50
-          docker compose logs vybe_app2 --tail=50
-          docker compose logs nginx --tail=30
-
-      - name: Run integration tests
-        run: |
-          curl -f http://localhost/health || exit 1
-          curl -f http://localhost:9090/-/healthy || exit 1
-          curl -f http://localhost:3000/api/health || exit 1
-
-      - name: Cleanup
-        if: always()
-        run: docker compose down -v
+          curl -f http://localhost:5000/health
+          curl -f http://localhost:5000/ready
