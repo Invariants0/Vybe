@@ -64,10 +64,13 @@ class UrlService:
     def get_url_by_code(self, short_code: str) -> Optional[ShortURL]:
         return self.repo.find_by_code(short_code)
 
-    def list_urls(self, user_id: Optional[int] = None) -> List[ShortURL]:
+    def list_urls(self, user_id: Optional[int] = None, is_active: Optional[bool] = None) -> List[ShortURL]:
+        filters = {}
         if user_id:
-            return self.repo.list_for_user(user_id=user_id)
-        return self.repo.get_all(order_by=ShortURL.id)
+            filters["user_id"] = user_id
+        if is_active is not None:
+            filters["is_active"] = is_active
+        return self.repo.get_all(order_by=ShortURL.id, **filters)
 
     def update_url(self, url_id: int, data: Dict[str, Any]) -> Optional[ShortURL]:
         updates = {}
@@ -88,6 +91,12 @@ class UrlService:
             cache_key = f"shorturl:{obj.short_code}"
             cache_delete(cache_key, self.config)
         return obj
+
+    def delete_url(self, url_id: int) -> None:
+        url = self.repo.get_by_id(url_id)
+        if url:
+            cache_delete(f"shorturl:{url.short_code}", self.config)
+        self.repo.delete(url_id)
 
     def resolve_redirect(self, short_code: str) -> Optional[str]:
         """
