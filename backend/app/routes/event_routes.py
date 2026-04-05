@@ -19,3 +19,7 @@ def get_controller():
 @events_bp.get("")
 def list_events():
     return get_controller().list_events(request)
+
+@events_bp.post("")
+def create_event():
+    return get_controller().create_event(request)
