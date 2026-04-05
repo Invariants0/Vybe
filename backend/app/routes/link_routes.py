@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app, jsonify, redirect
 
+from backend.app.config.errors import ForbiddenError, NotFoundError
 from backend.app.services.url_service import UrlService
 
 links_bp = Blueprint("links", __name__)
@@ -16,7 +17,17 @@ def _get_service():
 
 @links_bp.get("/<string:code>")
 def follow_short_link(code):
-    destination = _get_service().resolve_redirect(code)
+    try:
+        destination = _get_service().resolve_redirect(code)
+    except ForbiddenError:
+        return jsonify(
+            {"error": "gone", "message": "This link has been deactivated."}
+        ), 410
+    except NotFoundError:
+        return jsonify(
+            {"error": "not_found", "message": "Link not found."}
+        ), 404
+
     if not destination:
         return jsonify(
             {"error": "not_found", "message": "Link not found or inactive"}
