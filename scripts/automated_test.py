@@ -16,6 +16,7 @@ import io
 import json
 import os
 import sys
+import time
 import requests
 
 BASE_URL = sys.argv[1].rstrip("/") if len(sys.argv) > 1 else "http://localhost:80"
@@ -41,6 +42,11 @@ def req(method, path, **kwargs):
         return None
 
 
+def has_response(resp):
+    # requests.Response is falsy for 4xx/5xx, but those are still valid HTTP responses.
+    return resp is not None
+
+
 def check(name, passed, details=""):
     status = PASS if passed else FAIL
     results.append((name, passed, details))
@@ -61,7 +67,7 @@ def section(title):
 section("HEALTH")
 
 r = req("GET", "/health")
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else {}
     check("test_health_check",
@@ -92,7 +98,7 @@ print(f"  [INFO] CSV row count: {row_count}")
 r = req("POST", "/users/bulk",
         files={"file": ("users.csv", io.BytesIO(csv_bytes), "text/csv")})
 bulk_ok = False
-if r:
+if has_response(r):
     bulk_ok = r.status_code in (200, 201)
     body = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
     # The evaluator expects 400 rows imported
@@ -105,7 +111,7 @@ else:
 
 # test_get_users_list — GET /users — expect at least 1 item
 r = req("GET", "/users")
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else []
     has_items = isinstance(body, list) and len(body) >= 1
@@ -117,7 +123,7 @@ else:
 
 # test_get_users_pagination — GET /users?page=1&per_page=10 — expect exactly 10
 r = req("GET", "/users", params={"page": 1, "per_page": 10})
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else []
     has_10 = isinstance(body, list) and len(body) == 10
@@ -129,7 +135,7 @@ else:
 
 # test_get_user_by_id — GET /users/1 — user from the seeded CSV, id=1 is "quietpioneer19"
 r = req("GET", "/users/1")
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else {}
     check("test_get_user_by_id",
@@ -139,15 +145,18 @@ else:
     check("test_get_user_by_id", False, "No response")
 
 # test_create_user — POST /users with exact MLH evaluator input
+user_suffix = int(time.time() * 1000)
+create_username = f"testuser_create_{user_suffix}"
+create_email = f"{create_username}@example.com"
 r = req("POST", "/users",
-        json={"email": "testuser_create@example.com", "username": "testuser_create"})
+        json={"email": create_email, "username": create_username})
 created_user_id = None
-if r:
+if has_response(r):
     ok = r.status_code == 201
     body = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
     created_user_id = body.get("id")
-    match = (body.get("email") == "testuser_create@example.com"
-             and body.get("username") == "testuser_create")
+    match = (body.get("email") == create_email
+             and body.get("username") == create_username)
     check("test_create_user",
           ok and match,
           f"status={r.status_code}, body={r.text[:300]}")
@@ -156,7 +165,7 @@ else:
 
 # test_update_user — PUT /users/1
 r = req("PUT", "/users/1", json={"username": "updated_username"})
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else {}
     check("test_update_user",
@@ -167,7 +176,7 @@ else:
 
 # test_delete_user — DELETE /users/200
 r = req("DELETE", "/users/200")
-if r:
+if has_response(r):
     check("test_delete_user",
           r.status_code in (200, 204),
           f"status={r.status_code}, body={r.text[:200]}")
@@ -176,7 +185,7 @@ else:
 
 # test_get_nonexistent_user — GET /users/99999 → expect 404
 r = req("GET", "/users/99999")
-if r:
+if has_response(r):
     check("test_get_nonexistent_user",
           r.status_code == 404,
           f"status={r.status_code}, body={r.text[:200]}")
@@ -194,7 +203,7 @@ r = req("POST", "/urls",
         json={"original_url": "https://example.com/test-create", "title": "Test Create URL", "user_id": 1})
 created_url_id = None
 created_short_code = None
-if r:
+if has_response(r):
     ok = r.status_code == 201
     body = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
     created_url_id = body.get("id")
@@ -207,7 +216,7 @@ else:
 
 # test_get_urls_list — GET /urls
 r = req("GET", "/urls")
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else []
     check("test_get_urls_list",
@@ -219,7 +228,7 @@ else:
 # test_get_url_by_id — GET /urls/1 (should exist after create)
 target_url_id = created_url_id or 1
 r = req("GET", f"/urls/{target_url_id}")
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else {}
     check("test_get_url_by_id",
@@ -230,7 +239,7 @@ else:
 
 # test_get_urls_by_user — GET /urls?user_id=1
 r = req("GET", "/urls", params={"user_id": 1})
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else []
     check("test_get_urls_by_user",
@@ -242,11 +251,11 @@ else:
 # test_redirect_short_code — create a URL then redirect
 r = req("POST", "/urls",
         json={"original_url": "https://example.com/redirect-target", "title": "Redirect Test", "user_id": 1})
-if r and r.status_code == 201:
+if has_response(r) and r.status_code == 201:
     redirect_code = r.json().get("short_code")
     check("test_redirect_short_code (create)", bool(redirect_code), f"short_code={redirect_code}")
     r2 = req("GET", f"/{redirect_code}", allow_redirects=False)
-    if r2:
+    if has_response(r2):
         check("test_redirect_short_code (redirect)",
               r2.status_code in (301, 302),
               f"status={r2.status_code}, location={r2.headers.get('Location')}")
@@ -259,7 +268,7 @@ else:
 # test_update_url — PUT /urls/<id>
 url_id_to_update = created_url_id or 1
 r = req("PUT", f"/urls/{url_id_to_update}", json={"title": "Updated Title"})
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else {}
     check("test_update_url",
@@ -270,7 +279,7 @@ else:
 
 # test_deactivate_url — PUT /urls/<id> with is_active=false
 r = req("PUT", f"/urls/{url_id_to_update}", json={"is_active": False})
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else {}
     check("test_deactivate_url",
@@ -281,7 +290,7 @@ else:
 
 # test_get_active_urls — GET /urls?is_active=true
 r = req("GET", "/urls", params={"is_active": "true"})
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else []
     check("test_get_active_urls",
@@ -290,11 +299,11 @@ if r:
 else:
     check("test_get_active_urls", False, "No response")
 
-# test_delete_url — DELETE /urls/999 (likely doesn't exist → may return 404, which is fine)
+# test_delete_url — DELETE /urls/999 (likely doesn't exist → accept idempotent delete or 404)
 r = req("DELETE", "/urls/999")
-if r:
+if has_response(r):
     check("test_delete_url",
-          r.status_code in (200, 204),
+          r.status_code in (200, 204, 404),
           f"status={r.status_code}, body={r.text[:200]}")
 else:
     check("test_delete_url", False, "No response")
@@ -307,7 +316,7 @@ section("EVENTS")
 
 # test_get_events_list — GET /events
 r = req("GET", "/events")
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else []
     check("test_get_events_list",
@@ -318,7 +327,7 @@ else:
 
 # test_get_events_by_url — GET /events?url_id=1
 r = req("GET", "/events", params={"url_id": created_url_id or 1})
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else []
     check("test_get_events_by_url",
@@ -329,7 +338,7 @@ else:
 
 # test_get_events_by_user — GET /events?user_id=1
 r = req("GET", "/events", params={"user_id": 1})
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else []
     check("test_get_events_by_user",
@@ -340,7 +349,7 @@ else:
 
 # test_get_events_by_type — GET /events?event_type=click
 r = req("GET", "/events", params={"event_type": "click"})
-if r:
+if has_response(r):
     ok = r.status_code == 200
     body = r.json() if ok else []
     check("test_get_events_by_type",
@@ -358,7 +367,7 @@ r = req("POST", "/events",
             "url_id": url_id_for_event,
             "user_id": 1
         })
-if r:
+if has_response(r):
     ok = r.status_code == 201
     body = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
     check("test_create_event",
