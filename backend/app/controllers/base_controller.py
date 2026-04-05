@@ -1,4 +1,4 @@
-from flask import current_app, g, jsonify
+from flask import current_app, g, jsonify, request
 
 try:
     import sentry_sdk
@@ -11,6 +11,18 @@ except ImportError:
 class BaseController:
     def handle_success(self, data, status_code=200):
         return jsonify(data), status_code
+
+    def require_json(self):
+        """Return a 415 response tuple if Content-Type is not application/json, else None."""
+        content_type = request.content_type or ""
+        if "application/json" not in content_type:
+            return jsonify(
+                {
+                    "error": "unsupported_media_type",
+                    "message": "Content-Type must be application/json.",
+                }
+            ), 415
+        return None
 
     def handle_error(self, error, operation_name):
         error_type = type(error).__name__
