@@ -19,8 +19,12 @@ export default function Dashboard() {
 
   const handleCreate = async () => {
     if (!url.trim()) return;
+    let finalUrl = url.trim();
+    if (!/^https?:\/\//i.test(finalUrl)) {
+      finalUrl = `https://${finalUrl}`;
+    }
     try {
-      await createLink({ original_url: url, user_id: 1 });
+      await createLink({ original_url: finalUrl, user_id: 1 });
       setUrl('');
     } catch {}
   };
@@ -56,7 +60,7 @@ export default function Dashboard() {
             <div className="flex-1 md:w-64 flex items-center px-4 bg-vybe-light border-2 border-vybe-black shadow-[4px_4px_0px_0px_#333333]">
               <LinkIcon className="w-4 h-4 text-vybe-black/50 mr-2" />
               <input
-                type="url"
+                type="text"
                 placeholder="Shorten a new link..."
                 className="w-full bg-transparent py-2 outline-none font-medium"
                 value={url}

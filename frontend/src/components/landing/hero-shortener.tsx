@@ -13,10 +13,14 @@ export function HeroShortener() {
 
   const handleShorten = async () => {
     if (!url.trim()) return;
+    let finalUrl = url.trim();
+    if (!/^https?:\/\//i.test(finalUrl)) {
+      finalUrl = `https://${finalUrl}`;
+    }
     try {
       setLoading(true);
       setError(null);
-      const link = await linksApi.create({ original_url: url, user_id: 1 });
+      const link = await linksApi.create({ original_url: finalUrl, user_id: 1 });
       setResult(`${window.location.origin}/${link.short_code}`);
       setUrl('');
     } catch {
@@ -84,7 +88,7 @@ export function HeroShortener() {
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
               </svg>
               <input
-                type="url"
+                type="text"
                 placeholder="Paste your long URL here..."
                 className="w-full bg-transparent py-4 outline-none font-medium placeholder:text-vybe-dark/50"
                 value={url}
@@ -100,16 +104,25 @@ export function HeroShortener() {
           {result && (
             <div className="bg-vybe-light p-4 border-2 border-vybe-black shadow-[4px_4px_0px_0px_#0a1f0c] max-w-xl">
               <p className="text-sm font-bold text-vybe-dark/70 mb-1">Your shortened link:</p>
-              <button
-                type="button"
-                className="text-lg font-extrabold text-vybe-primary hover:underline cursor-pointer"
-                onClick={() => {
-                  navigator.clipboard.writeText(result);
-                }}
-              >
-                {result}
-              </button>
-              <p className="text-xs text-vybe-dark/50 mt-1">Click to copy</p>
+              <div className="flex items-center gap-3">
+                <a
+                  href={result}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-lg font-extrabold text-vybe-primary hover:underline"
+                >
+                  {result}
+                </a>
+                <button
+                  type="button"
+                  className="px-3 py-1 text-sm font-bold border-2 border-vybe-black bg-vybe-gray hover:bg-vybe-accent transition-colors"
+                  onClick={() => {
+                    navigator.clipboard.writeText(result);
+                  }}
+                >
+                  Copy
+                </button>
+              </div>
             </div>
           )}
 
