@@ -7,6 +7,8 @@ from backend.app.config.errors import register_error_handlers
 from backend.app.middleware import register_middleware
 from backend.app.routes.metrics_routes import init_metrics, metrics_bp
 from backend.app.utils import cache
+from backend.app.validators.schemas import CreateUserSchema
+from pydantic import ValidationError
 
 
 @pytest.fixture(autouse=True)
@@ -50,6 +52,17 @@ def app():
     def echo():
         payload = request.get_json()
         return jsonify(payload or {}), 200
+
+    @app.post("/users")
+    def create_user():
+        data = request.get_json()
+        if data is None:
+            return jsonify({"error": "bad_request", "message": "Invalid JSON"}), 400
+        try:
+            CreateUserSchema(**data)
+            return jsonify({"id": 1, "username": data.get("username"), "email": data.get("email")}), 201
+        except ValidationError as e:
+            return jsonify({"error": "validation_error", "details": e.errors()}), 422
 
     return app
 
