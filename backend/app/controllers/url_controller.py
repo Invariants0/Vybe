@@ -50,9 +50,13 @@ class UrlController(BaseController):
     def list_urls(self, request):
         try:
             user_id = request.args.get("user_id", type=int)
+            is_active_raw = request.args.get("is_active")
+            is_active = None
+            if is_active_raw is not None:
+                is_active = is_active_raw.lower() == "true"
             
             # Create cache key based on user_id filter
-            cache_key = f"urls:list:{user_id or 'all'}"
+            cache_key = f"urls:list:{user_id or 'all'}:{is_active}"
             
             # Try to get from cache
             cached = cache_get(cache_key, self.config)
@@ -60,7 +64,7 @@ class UrlController(BaseController):
                 return self.handle_success(json.loads(cached))
             
             # Cache miss - fetch from DB
-            urls = self.url_service.list_urls(user_id=user_id)
+            urls = self.url_service.list_urls(user_id=user_id, is_active=is_active)
             result = [
                 {
                     "id": u.id,
@@ -144,3 +148,14 @@ class UrlController(BaseController):
             })
         except Exception as e:
             return self.handle_error(e, "update_url")
+
+    def delete_url(self, url_id: int):
+        try:
+            url = self.url_service.get_url(url_id)
+            if not url:
+                raise ValueError("URL not found")
+            self.url_service.delete_url(url_id)
+            cache_delete(f"url:{url_id}", self.config)
+            return self.handle_success({}, 204)
+        except Exception as e:
+            return self.handle_error(e, "delete_url")

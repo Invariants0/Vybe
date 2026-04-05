@@ -129,6 +129,17 @@ class UserController(BaseController):
         except Exception as e:
             return self.handle_error(e, "update_user")
 
+    def delete_user(self, user_id: int):
+        try:
+            user = self.user_service.get_user(user_id)
+            if not user:
+                raise ValueError("User not found")
+            self.user_service.delete_user(user_id)
+            cache_delete(f"user:{user_id}", self.config)
+            return self.handle_success({}, 204)
+        except Exception as e:
+            return self.handle_error(e, "delete_user")
+
     def bulk_import(self, request):
         try:
             if "file" not in request.files:
