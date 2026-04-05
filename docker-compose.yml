@@ -149,12 +149,90 @@ services:
     image: prom/alertmanager:v0.27.0
     container_name: vybe_alertmanager
     volumes:
-      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/config.yml
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/config.yml.template:ro
+      - ./monitoring/alertmanager/entrypoint.sh:/entrypoint.sh:ro
+    env_file:
+      - ./backend/.env
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
     command:
       - "--config.file=/etc/alertmanager/config.yml"
       - "--storage.path=/alertmanager"
     ports:
       - "9093:9093"
+    restart: unless-stopped
+    networks:
+      - vybe_network
+    depends_on:
+      - webhook_proxy
+
+  webhook_proxy:
+    build:
+      context: ./monitoring/webhook-proxy
+      dockerfile: Dockerfile
+    container_name: vybe_webhook_proxy
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+    networks:
+      - vybe_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # System metrics exporter (host-level CPU, memory, disk, network)
+  node_exporter:
+    image: prom/node-exporter:v1.8.0
+    container_name: vybe_node_exporter
+    command:
+      - '--path.rootfs=/host'
+    pid: host
+    volumes:
+      - '/:/host:ro'
+    restart: unless-stopped
+    networks:
+      - vybe_network
+
+  # Container metrics exporter (per-container CPU, memory, network, disk I/O)
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: vybe_cadvisor
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    restart: unless-stopped
+    networks:
+      - vybe_network
+
+  # PostgreSQL metrics exporter
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: vybe_postgres_exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${DATABASE_USER:-postgres}:${DATABASE_PASSWORD:-postgres}@db:5432/${DATABASE_NAME:-hackathon_db}?sslmode=disable"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - vybe_network
+
+  # Redis metrics exporter
+  redis_exporter:
+    image: oliver006/redis_exporter:v1.58.0
+    container_name: vybe_redis_exporter
+    environment:
+      REDIS_ADDR: "redis:6379"
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - vybe_network
