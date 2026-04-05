@@ -457,6 +457,56 @@ def test_base_controller_handles_pydantic_error(app):
     assert response.get_json()["error"] == "validation_error"
 
 
+def test_base_controller_expose_error_details(app):
+    controller = UserController(MagicMock())
+    app.config["EXPOSE_ERROR_DETAILS"] = True
+
+    with app.app_context():
+        response, status = controller.handle_error(RuntimeError("boom"), "create_user")
+
+    body = response.get_json()
+    assert status == 500
+    assert body["error_type"] == "RuntimeError"
+    assert body["error_detail"] == "boom"
+    assert body["operation"] == "create_user"
+
+
+def test_base_controller_handles_conflict_error(app):
+    from backend.app.config.errors import ConflictError
+
+    controller = UserController(MagicMock())
+
+    with app.app_context():
+        response, status = controller.handle_error(ConflictError("duplicate"), "create_user")
+
+    assert status == 409
+    assert response.get_json()["error"] == "conflict"
+
+
+def test_base_controller_handles_forbidden_error(app):
+    from backend.app.config.errors import ForbiddenError
+
+    controller = UserController(MagicMock())
+
+    with app.app_context():
+        response, status = controller.handle_error(ForbiddenError("nope"), "update_user")
+
+    assert status == 403
+    assert response.get_json()["error"] == "forbidden"
+
+
+def test_base_controller_handles_gone_error(app):
+    from backend.app.config.errors import GoneError
+
+    controller = UserController(MagicMock())
+
+    with app.app_context():
+        response, status = controller.handle_error(GoneError("deleted"), "get_user")
+
+    assert status == 410
+    assert response.get_json()["error"] == "gone"
+
+
 def test_base_controller_reports_to_sentry(app):
     controller = UserController(MagicMock())
     app.config["SENTRY_DSN"] = "https://example@sentry.invalid/1"
