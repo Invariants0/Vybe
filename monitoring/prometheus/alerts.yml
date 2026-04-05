@@ -1,28 +1,27 @@
 groups:
   - name: vybe_alerts
     rules:
-      # Application alerts
       - alert: HighErrorRate
-        expr: rate(http_errors_total[5m]) > 0.05
-        for: 2m
+        expr: rate(http_errors_total[1m]) > 0.05
+        for: 1m
         labels:
           severity: warning
         annotations:
           summary: "High HTTP error rate"
-          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes."
+          description: "Error rate is {{ $value | humanizePercentage }} over the last minute."
 
       - alert: High5xxRate
-        expr: rate(http_errors_total{status=~"5.."}[5m]) > 0.02
-        for: 2m
+        expr: rate(http_errors_total{status=~"5.."}[1m]) > 0.02
+        for: 1m
         labels:
           severity: critical
         annotations:
           summary: "High 5xx error rate"
-          description: "5xx error rate is {{ $value | humanizePercentage }} on instance {{ $labels.instance }}. This indicates server-side issues."
+          description: "5xx error rate is {{ $value | humanizePercentage }} on instance {{ $labels.instance }}."
 
       - alert: HighLatency
-        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1.0
-        for: 5m
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[1m])) by (le, instance)) > 1.0
+        for: 1m
         labels:
           severity: warning
         annotations:
@@ -30,7 +29,7 @@ groups:
           description: "P95 latency is {{ $value }}s on instance {{ $labels.instance }}."
 
       - alert: InstanceDown
-        expr: up{job="vybe"} == 0
+        expr: up{job="vybe"} == 0 and on() (time() - process_start_time_seconds{job="prometheus"} > 120)
         for: 1m
         labels:
           severity: critical
@@ -38,38 +37,45 @@ groups:
           summary: "Vybe instance down"
           description: "Instance {{ $labels.instance }} is unreachable."
 
-      # System resource alerts
       - alert: HighCPUUsage
-        expr: rate(process_cpu_seconds_total{job="vybe"}[5m]) * 100 > 80
-        for: 5m
+        expr: max(rate(container_cpu_usage_seconds_total{id=~"/docker/.+",cpu="total"}[1m]) * 100) > 80
+        for: 1m
         labels:
           severity: warning
         annotations:
-          summary: "High CPU usage"
-          description: "CPU usage is {{ $value | humanize }}% on instance {{ $labels.instance }}."
+          summary: "High container CPU usage"
+          description: "Container CPU usage is {{ $value | humanize }}%."
 
       - alert: HighMemoryUsage
-        expr: (container_memory_usage_bytes{name=~"vybe_app.*"} / container_spec_memory_limit_bytes{name=~"vybe_app.*"}) * 100 > 85
-        for: 5m
+        expr: max(container_memory_usage_bytes{id=~"/docker/.+"}) > 450000000
+        for: 1m
         labels:
           severity: warning
         annotations:
           summary: "High memory usage"
-          description: "Memory usage is {{ $value | humanize }}% on container {{ $labels.name }}."
+          description: "A container is using {{ $value | humanize1024 }}B memory."
 
       - alert: ContainerRestarting
-        expr: rate(container_last_seen{name=~"vybe_app.*"}[5m]) > 0
+        expr: changes(container_start_time_seconds{id=~"/docker/.+"}[2m]) > 0 and on() (time() - process_start_time_seconds{job="prometheus"} > 180)
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container restarting"
+          description: "A container restarted within the last 2 minutes."
+
+      - alert: ContainerUnhealthy
+        expr: sum(up{job=~"vybe|postgres|redis|nginx_upstream"} == 0) > 0 and on() (time() - process_start_time_seconds{job="prometheus"} > 120)
         for: 1m
         labels:
           severity: critical
         annotations:
-          summary: "Container restarting frequently"
-          description: "Container {{ $labels.name }} is restarting frequently."
+          summary: "Critical service unavailable"
+          description: "One or more critical monitored services are down."
 
-      # Database alerts
       - alert: PostgresTooManyConnections
         expr: sum(pg_stat_database_numbackends) / pg_settings_max_connections * 100 > 80
-        for: 5m
+        for: 1m
         labels:
           severity: warning
         annotations:
@@ -77,7 +83,7 @@ groups:
           description: "PostgreSQL is using {{ $value | humanize }}% of max connections."
 
       - alert: PostgresDown
-        expr: up{job="postgres"} == 0
+        expr: pg_up == 0 and on() (time() - process_start_time_seconds{job="prometheus"} > 120)
         for: 1m
         labels:
           severity: critical
@@ -85,18 +91,26 @@ groups:
           summary: "PostgreSQL is down"
           description: "PostgreSQL database is unreachable."
 
+      - alert: PostgresConnectionFailure
+        expr: pg_exporter_last_scrape_error > 0 and on() (time() - process_start_time_seconds{job="prometheus"} > 120)
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL connection failure"
+          description: "postgres_exporter cannot scrape PostgreSQL."
+
       - alert: PostgresSlowQueries
-        expr: rate(pg_stat_database_tup_fetched[5m]) / rate(pg_stat_database_tup_returned[5m]) < 0.1
-        for: 10m
+        expr: rate(pg_stat_database_tup_returned[1m]) > 1000 and (rate(pg_stat_database_tup_fetched[1m]) / clamp_min(rate(pg_stat_database_tup_returned[1m]), 1)) < 0.1
+        for: 5m
         labels:
           severity: warning
         annotations:
           summary: "PostgreSQL slow queries detected"
-          description: "Query efficiency is low ({{ $value | humanizePercentage }}). May indicate missing indexes or inefficient queries."
+          description: "Query efficiency is low ({{ $value | humanizePercentage }})."
 
-      # Redis alerts
       - alert: RedisDown
-        expr: up{job="redis"} == 0
+        expr: (redis_up == 0 or absent(redis_up) or redis_exporter_last_scrape_error > 0) and on() (time() - process_start_time_seconds{job="prometheus"} > 120)
         for: 1m
         labels:
           severity: critical
@@ -104,9 +118,18 @@ groups:
           summary: "Redis is down"
           description: "Redis cache is unreachable."
 
+      - alert: RedisConnectionFailure
+        expr: (redis_exporter_last_scrape_error > 0 or absent(redis_up)) and on() (time() - process_start_time_seconds{job="prometheus"} > 120)
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis connection failure"
+          description: "redis_exporter cannot scrape Redis."
+
       - alert: RedisHighMemoryUsage
-        expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 90
-        for: 5m
+        expr: redis_memory_max_bytes > 0 and ((redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 90)
+        for: 1m
         labels:
           severity: warning
         annotations:
@@ -114,10 +137,19 @@ groups:
           description: "Redis is using {{ $value | humanize }}% of max memory."
 
       - alert: RedisHighEvictionRate
-        expr: rate(redis_evicted_keys_total[5m]) > 10
-        for: 5m
+        expr: rate(redis_evicted_keys_total[1m]) > 10
+        for: 1m
         labels:
           severity: warning
         annotations:
           summary: "Redis high eviction rate"
-          description: "Redis is evicting {{ $value | humanize }} keys/sec. Consider increasing memory."
+          description: "Redis is evicting {{ $value | humanize }} keys/sec."
+
+      - alert: NginxUpstreamFailure
+        expr: up{job="nginx_upstream"} == 0 and on() (time() - process_start_time_seconds{job="prometheus"} > 120)
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Nginx upstream failure"
+          description: "Nginx upstream health probe is failing."
