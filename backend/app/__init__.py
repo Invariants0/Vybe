@@ -55,13 +55,12 @@ def create_app():
     register_error_handlers(app)
     register_routes(app)
 
-    if app.config["AUTO_CREATE_TABLES"]:
-        try:
-            create_tables()
-        except Exception as e:
-            app.logger.warning(
-                f"Failed to create tables during startup: {e}. Tables will be created on first request."
-            )
+    try:
+        create_tables()
+    except Exception as e:
+        app.logger.warning(
+            f"Failed to create tables during startup: {e}. Tables will be created on first request."
+        )
 
     @app.get("/health")
     def health():
