@@ -44,6 +44,16 @@ function secureRandomString(length) {
   return result;
 }
 
+function secureRandomFloat() {
+  const bytes = new Uint8Array(crypto.randomBytes(4));
+  const val = (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
+  return (val >>> 0) / 4294967296;
+}
+
+function secureRandomInt(max) {
+  return Math.floor(secureRandomFloat() * max);
+}
+
 export const options = {
   stages: [
     { duration: "30s", target: 50 },  // Ramp to 50
@@ -125,11 +135,11 @@ export function setup() {
 export default function (data) {
   const { userIds, urlIds, shortCodes } = data;
 
-  const rand = Math.random();
+  const rand = secureRandomFloat();
 
   // 30% – GET /urls/<id> – Most cacheable read
   if (rand < 0.30) {
-    const urlId = urlIds[Math.floor(Math.random() * urlIds.length)];
+    const urlId = urlIds[secureRandomInt(urlIds.length)];
     const res = http.get(`${BASE_URL}/urls/${urlId}`, {
       tags: { name: "GET /urls/{id}" },
     });
@@ -184,7 +194,7 @@ export default function (data) {
   }
   // 10% – GET /users/<id> – Get specific user (cacheable)
   else if (rand < 0.90) {
-    const userId = userIds[Math.floor(Math.random() * userIds.length)];
+    const userId = userIds[secureRandomInt(userIds.length)];
     const res = http.get(`${BASE_URL}/users/${userId}`, {
       tags: { name: "GET /users/{id}" },
     });
@@ -199,10 +209,10 @@ export default function (data) {
   }
   // 5% – POST /urls – Create new URL (write operation, less frequent)
   else if (rand < 0.95) {
-    const userId = userIds[Math.floor(Math.random() * userIds.length)];
+    const userId = userIds[secureRandomInt(userIds.length)];
     const urlPayload = JSON.stringify({
       user_id: userId,
-      original_url: `https://example.com/dynamic-${Date.now()}-${Math.random()}`,
+      original_url: `https://example.com/dynamic-${Date.now()}-${secureRandomString(8)}`,
       title: `Dynamic Link ${Date.now()}`
     });
     const res = http.post(`${BASE_URL}/urls`, urlPayload, {
@@ -218,10 +228,10 @@ export default function (data) {
   }
   // 3% – PUT /urls/<id> – Update URL (write, rare)
   else if (rand < 0.98) {
-    const urlId = urlIds[Math.floor(Math.random() * urlIds.length)];
+    const urlId = urlIds[secureRandomInt(urlIds.length)];
     const updatePayload = JSON.stringify({
       title: `Updated Title ${Date.now()}`,
-      is_active: Math.random() > 0.5
+      is_active: secureRandomFloat() > 0.5
     });
     const res = http.put(`${BASE_URL}/urls/${urlId}`, updatePayload, {
       headers: { "Content-Type": "application/json" },
@@ -237,7 +247,7 @@ export default function (data) {
   else {
     const userPayload = JSON.stringify({
       username: `dynamic_user_${Date.now()}_${secureRandomString(7)}`,
-      email: `dynamic_${Date.now()}_${Math.random()}@example.com`
+      email: `dynamic_${Date.now()}_${secureRandomString(8)}@example.com`
     });
     const res = http.post(`${BASE_URL}/users`, userPayload, {
       headers: { "Content-Type": "application/json" },
@@ -251,5 +261,5 @@ export default function (data) {
     latencyTrend.add(res.timings.duration);
   }
 
-  sleep(0.1); // Small think time between requests
+  sleep(0.1);
 }

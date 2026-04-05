@@ -13,6 +13,11 @@ _client: Optional["redis.Redis"] = None  # type: ignore[type-arg]
 
 logger = logging.getLogger(__name__)
 
+def _sanitize_for_log(value: Any) -> Any:
+    if isinstance(value, str):
+        return value.replace("\r", "").replace("\n", "")
+    return value
+
 
 def _is_enabled(config: Optional[dict[str, Any]] = None) -> bool:
     if config and isinstance(config, dict):
@@ -67,7 +72,7 @@ def cache_get(key: str, config: Optional[dict[str, Any]] = None) -> Optional[str
     try:
         return client.get(key)
     except Exception as e:
-        logger.error("Redis GET failed for key=%s: %s", key, e)
+        logger.error("Redis GET failed for key=%s: %s", _sanitize_for_log(key), e)
         return None
 
 
@@ -79,7 +84,7 @@ def cache_set(key: str, value: str, ttl_seconds: int, config: Optional[dict[str,
         client.setex(key, ttl_seconds, value)
         return True
     except Exception as e:
-        logger.error("Redis SET failed for key=%s: %s", key, e)
+        logger.error("Redis SET failed for key=%s: %s", _sanitize_for_log(key), e)
         return False
 
 
@@ -110,5 +115,5 @@ def cache_delete(key: str, config: Optional[dict[str, Any]] = None) -> bool:
             client.delete(key)
             return True
     except Exception as e:
-        logger.error("Redis DELETE failed for key=%s: %s", key, e)
+        logger.error("Redis DELETE failed for key=%s: %s", _sanitize_for_log(key), e)
         return False

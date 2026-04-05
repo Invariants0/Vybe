@@ -13,14 +13,18 @@ app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def _sanitize_for_log(value):
+    if value is None:
+        return "None"
+    return str(value).replace("\r", "").replace("\n", "")
+
 DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    """Receive Alertmanager webhook and forward to Discord"""
     try:
         data = request.json
-        logger.info(f"Received webhook: {data}")
+        logger.info(f"Received webhook: {_sanitize_for_log(data)}")
         
         if not DISCORD_WEBHOOK_URL:
             logger.error("DISCORD_WEBHOOK_URL not configured")
@@ -33,7 +37,6 @@ def webhook():
             annotations = alert.get('annotations', {})
             status = alert.get('status', 'unknown')
             
-            # Determine color based on status and severity
             if status == 'firing':
                 if labels.get('severity') == 'critical':
                     color = 15158332  # Red
@@ -42,7 +45,6 @@ def webhook():
             else:
                 color = 3066993  # Green (resolved)
             
-            # Build Discord message
             discord_message = {
                 "content": f"🚨 **Alert {status.upper()}**",
                 "embeds": [{
@@ -76,7 +78,7 @@ def webhook():
             response = requests.post(DISCORD_WEBHOOK_URL, json=discord_message)
             
             if response.status_code == 204:
-                logger.info(f"Successfully sent alert to Discord: {labels.get('alertname')}")
+                logger.info(f"Successfully sent alert to Discord: {_sanitize_for_log(labels.get('alertname'))}")
             else:
                 logger.error(f"Failed to send to Discord: {response.status_code} - {response.text}")
         
