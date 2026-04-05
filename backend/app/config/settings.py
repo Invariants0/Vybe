@@ -1,8 +1,33 @@
 import os
+from urllib.parse import urlparse
 
 
 def _get_bool(name: str, default: str = "false") -> bool:
     return os.getenv(name, default).lower() == "true"
+
+
+def _parse_database_url():
+    """Parse DATABASE_URL into individual components. Falls back to individual env vars."""
+    database_url = os.getenv("DATABASE_URL", "")
+    if database_url:
+        parsed = urlparse(database_url)
+        return {
+            "name": (parsed.path or "/hackathon_db").lstrip("/"),
+            "host": parsed.hostname or "localhost",
+            "port": parsed.port or 5432,
+            "user": parsed.username or "postgres",
+            "password": parsed.password or "postgres",
+        }
+    return {
+        "name": os.getenv("DATABASE_NAME", "hackathon_db"),
+        "host": os.getenv("DATABASE_HOST", "localhost"),
+        "port": int(os.getenv("DATABASE_PORT", 5432)),
+        "user": os.getenv("DATABASE_USER", "postgres"),
+        "password": os.getenv("DATABASE_PASSWORD", "postgres"),
+    }
+
+
+_db = _parse_database_url()
 
 
 class BaseConfig:
@@ -10,11 +35,11 @@ class BaseConfig:
     FLASK_DEBUG = _get_bool("FLASK_DEBUG")
     SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
 
-    DATABASE_NAME = os.getenv("DATABASE_NAME", "hackathon_db")
-    DATABASE_HOST = os.getenv("DATABASE_HOST", "localhost")
-    DATABASE_PORT = int(os.getenv("DATABASE_PORT", 5432))
-    DATABASE_USER = os.getenv("DATABASE_USER", "postgres")
-    DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD", "postgres")
+    DATABASE_NAME = _db["name"]
+    DATABASE_HOST = _db["host"]
+    DATABASE_PORT = int(_db["port"])
+    DATABASE_USER = _db["user"]
+    DATABASE_PASSWORD = _db["password"]
     DB_MAX_CONNECTIONS = int(os.getenv("DB_MAX_CONNECTIONS", 20))
     DB_STALE_TIMEOUT_SECONDS = int(os.getenv("DB_STALE_TIMEOUT_SECONDS", 300))
     DB_CONNECTION_TIMEOUT_SECONDS = int(os.getenv("DB_CONNECTION_TIMEOUT_SECONDS", 10))
@@ -26,8 +51,8 @@ class BaseConfig:
     AUTO_CREATE_TABLES = _get_bool("AUTO_CREATE_TABLES")
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
     BASE_URL = os.getenv("BASE_URL", "http://localhost:5000").rstrip("/")
-    REDIS_ENABLED = _get_bool("REDIS_ENABLED")
     REDIS_URL = os.getenv("REDIS_URL", "")
+    REDIS_ENABLED = _get_bool("REDIS_ENABLED") if not REDIS_URL else True
     REDIS_DEFAULT_TTL_SECONDS = int(os.getenv("REDIS_DEFAULT_TTL_SECONDS", 300))
     REDIS_RETRY_ATTEMPTS = int(os.getenv("REDIS_RETRY_ATTEMPTS", 3))
     REDIS_RETRY_BACKOFF_SECONDS = float(os.getenv("REDIS_RETRY_BACKOFF_SECONDS", 0.05))
