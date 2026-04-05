@@ -474,6 +474,18 @@ class TestEventController:
         assert status == 400
         assert response.get_json()["error"] == "bad_request"
 
+    def test_create_event_rejects_string_payload(self, app):
+        controller = EventController(MagicMock())
+
+        with app.app_context():
+            response, status = controller.create_event(
+                _request("just a string, not a chest")
+            )
+
+        assert status == 400
+        assert response.get_json()["error"] == "bad_request"
+        controller.event_service.create_event.assert_not_called()
+
 
 def test_base_controller_handles_pydantic_error(app):
     controller = UserController(MagicMock())

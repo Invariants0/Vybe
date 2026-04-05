@@ -46,9 +46,13 @@ class EventController(BaseController):
 
     def create_event(self, request):
         try:
+            err = self.require_json(request)
+            if err:
+                return err
+
             data = request.get_json()
-            if not data:
-                raise ValueError("Payload cannot be empty")
+            if not data or not isinstance(data, dict):
+                raise ValueError("Payload must be a JSON object")
 
             details = data.get("details", {})
             if details is not None and not isinstance(details, dict):
