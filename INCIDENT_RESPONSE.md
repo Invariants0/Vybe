@@ -1,5 +1,103 @@
 # INCIDENT RESPONSE AUDIT
 
+## Live Validation Run - April 5, 2026
+
+This section records the real incident-response execution completed on April 5, 2026. It supersedes any purely design-based readiness claims elsewhere in this document.
+
+### Scope Executed
+
+- Used the `scripts/response/` subset workflow as the basis for execution.
+- Excluded tests `1`, `2`, `7`, and `10` as requested.
+- Executed live tests:
+  - Test 3: Database Down
+  - Test 4: CPU Spike
+  - Test 5: Memory Pressure
+  - Test 6: Redis Failure
+
+### Environment Reset
+
+```bash
+docker compose down -v
+docker compose up -d --build
+sleep 60
+docker compose ps
+```
+
+### Baseline Observations Before Fault Injection
+
+- `vybe_app1`, `vybe_app2`, `vybe_db`, `vybe_redis`, Prometheus, Grafana, and Alertmanager came up successfully.
+- `vybe_webhook_proxy` reported `unhealthy` in `docker compose ps`, but webhook delivery still worked during the tests because Alertmanager successfully POSTed to it.
+- A false-positive `RedisHighMemoryUsage` alert was present on clean startup because the rule evaluates `(redis_memory_used_bytes / redis_memory_max_bytes) * 100` and `redis_memory_max_bytes` was effectively zero, producing `+Inf`.
+- A transient `InstanceDown` alert for `vybe_app2:5000` appeared during early baseline collection even though the container later reported healthy. This indicates startup/scrape instability or alert tuning issues.
+
+### Live Test Results
+
+| Test | Expected | Actual Result | Status |
+|------|----------|---------------|--------|
+| Test 3: Database Down | `PostgresDown`, `HighErrorRate`, clear DB failure evidence | `/ready` returned `503`, app logs showed database resolution/connection failures immediately, `High5xxRate` and `HighErrorRate` eventually fired, but `PostgresDown` did **not** fire while `up{job="postgres"}` stayed `1` | Partial |
+| Test 4: CPU Spike | `HighCPUUsage` with visible CPU saturation | `docker stats` showed `vybe_app1` at about `99-102%` CPU, but the alert query `rate(process_cpu_seconds_total{job="vybe"}[5m]) * 100` only reached about `6-15%`, so `HighCPUUsage` never fired | Fail |
+| Test 5: Memory Pressure | `HighMemoryUsage` with visible memory saturation | Container memory rose to about `494 MiB` (`31.5%` of the observed limit) and later settled near `375 MiB`; the alert expression returned an empty vector because `name=~"vybe_app.*"` did not match live cAdvisor labels | Fail |
+| Test 6: Redis Failure | `RedisDown`, observable cache impact | `RedisDown` fired, webhook delivery succeeded, app logs showed repeated Redis connection failures, and `/users` requests slowed to about `16-17s` while still returning `200` | Pass |
+
+### Evidence Summary
+
+#### Test 3: Database Down
+
+- Fault injected by stopping `vybe_db`.
+- Root cause was identifiable from application logs in under 2 minutes:
+  - `Readiness check failed`
+  - `Failed to connect to database`
+  - repeated `GET /ready -> 503`
+- `PostgresDown` did not trigger because the alert rule uses `up{job="postgres"} == 0`, which measures scrapeability of `postgres_exporter`, not actual PostgreSQL availability.
+- Application error alerts did fire, but much later than the runbook expectation:
+  - `High5xxRate` started at `2026-04-05T05:21:17Z`
+  - `HighErrorRate` started at `2026-04-05T05:21:47Z`
+- This is materially slower than the expected 2-3 minutes because both rules use a `5m` rate window plus an additional `for: 2m`.
+
+#### Test 4: CPU Spike
+
+- Fault injected with a real CPU-bound process inside `vybe_app1`.
+- Container CPU was clearly visible in `docker stats` at about `100%`.
+- The alert did not fire because the alert watches the Flask/Gunicorn process metric `process_cpu_seconds_total`, while the injected load came from a separate shell process.
+- Result: observability of raw CPU exists, but alert correctness does not.
+
+#### Test 5: Memory Pressure
+
+- Fault injected with a real Python allocation inside `vybe_app1`.
+- Raw cAdvisor memory metrics confirmed the container memory increase.
+- The configured `HighMemoryUsage` query returned no series at all during the run, which indicates the label selector is incorrect for the live metric shape.
+- The injected load also did not cross the documented `85%` threshold, so the current test script is not strong enough to validate the rule even if the selector is fixed.
+
+#### Test 6: Redis Failure
+
+- Fault injected by stopping `vybe_redis`.
+- `RedisDown` fired and Alertmanager delivered the notification through `webhook_proxy`.
+- Logs made root cause identification straightforward:
+  - `Redis connection failed`
+  - `Redis GET failed`
+  - `Redis SET failed`
+- User-visible impact was present but degraded rather than fatal:
+  - `/users` continued returning `200`
+  - request latency rose to roughly `16-17s`
+
+### Measured Readiness Conclusion
+
+- The executed subset did **not** validate the target `90-95%` readiness claim.
+- Measured outcome for the tested subset is closer to `55-65%` readiness:
+  - debuggability is strong
+  - alert correctness is inconsistent
+  - alert timing is slower than the documented expectation for database failure
+  - two of four executed tests failed their primary alerting objective
+- Current production-readiness verdict from live testing: **not yet production-ready for incident response without alert-rule fixes and retesting**
+
+### Required Fixes Before Re-Running
+
+1. Change `PostgresDown` to use a real PostgreSQL availability signal such as `pg_up == 0` instead of exporter scrape availability.
+2. Rework `HighCPUUsage` to use container CPU metrics from cAdvisor, or generate CPU load inside the monitored application process instead of a sidecar process.
+3. Fix `HighMemoryUsage` label selection to match live cAdvisor labels, then increase the fault-injection strength so the test can cross the threshold.
+4. Fix `RedisHighMemoryUsage` so it does not divide by zero and produce a false positive on baseline startup.
+5. Re-test the subset after rule corrections and update this section with the new measured timings.
+
 ## 🔎 Codebase Overview
 
 - **Backend Tech Stack:**
@@ -1004,4 +1102,4 @@ docker exec vybe_redis redis-cli ping
 
 ---
 
-**Overall assessment:** System has achieved 90-95% incident response readiness with production-grade monitoring, comprehensive alerting, detailed runbooks, and complete observability. The system can automatically detect incidents, alert within minutes, and provide all necessary information to diagnose and resolve issues quickly. Remaining gaps are acceptable and do not prevent effective incident response.
+**Overall assessment:** The design and instrumentation coverage are broad, but the live validation run on April 5, 2026 did not confirm the previously claimed 90-95% readiness level. Actual testing showed strong logs and root-cause diagnosability, but also exposed alert-definition gaps, false positives, and missed resource alerts. Treat the system as partially ready until the failing alert rules are corrected and the subset is re-run successfully.
