@@ -1,5 +1,5 @@
 /**
- * load_test.js – Gold Tier k6 load testing script for Vybe
+ * k6 load testing
  * 
  * STRATEGY: Pre-create fixed URLs in setup, then load test with HIGH READ frequency (cacheable)
  * to leverage Redis caching. Tests ALL endpoints from AUTOMATED_TESTS.md.
@@ -23,15 +23,26 @@
 
 
 import http from "k6/http";
+import crypto from "k6/crypto";
 import { check, sleep } from "k6";
 import { Rate, Trend } from "k6/metrics";
 
 const BASE_URL = __ENV.BASE_URL || "http://localhost";
 
-// Custom metrics for Gold Tier observability
 const errorRate = new Rate("error_rate");
 const latencyTrend = new Trend("request_latency");
 const cacheHitRate = new Rate("cache_hit_rate");
+
+function secureRandomString(length) {
+  const chars = "0123456789abcdefghijklmnopqrstuvwxyz";
+  const bytes = crypto.randomBytes(length);
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    const idx = bytes[i] % chars.length;
+    result += chars.charAt(idx);
+  }
+  return result;
+}
 
 export const options = {
   stages: [
@@ -114,7 +125,6 @@ export function setup() {
 export default function (data) {
   const { userIds, urlIds, shortCodes } = data;
 
-  // Generate random operation based on traffic distribution
   const rand = Math.random();
 
   // 30% – GET /urls/<id> – Most cacheable read
@@ -226,7 +236,7 @@ export default function (data) {
   // 2% – POST /users – Create new user (write, very rare)
   else {
     const userPayload = JSON.stringify({
-      username: `dynamic_user_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+      username: `dynamic_user_${Date.now()}_${secureRandomString(7)}`,
       email: `dynamic_${Date.now()}_${Math.random()}@example.com`
     });
     const res = http.post(`${BASE_URL}/users`, userPayload, {
