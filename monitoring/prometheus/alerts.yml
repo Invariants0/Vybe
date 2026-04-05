@@ -110,8 +110,8 @@ groups:
           description: "Query efficiency is low ({{ $value | humanizePercentage }})."
 
       - alert: RedisDown
-        expr: (redis_up == 0 or absent(redis_up) or redis_exporter_last_scrape_error > 0) and on() (time() - process_start_time_seconds{job="prometheus"} > 120)
-        for: 1m
+        expr: redis_up == 0 and on() (time() - process_start_time_seconds{job="prometheus"} > 120)
+        for: 2m
         labels:
           severity: critical
         annotations:
@@ -119,8 +119,8 @@ groups:
           description: "Redis cache is unreachable."
 
       - alert: RedisConnectionFailure
-        expr: (redis_exporter_last_scrape_error > 0 or absent(redis_up)) and on() (time() - process_start_time_seconds{job="prometheus"} > 120)
-        for: 30s
+        expr: redis_exporter_last_scrape_error > 0 and on() (time() - process_start_time_seconds{job="prometheus"} > 120)
+        for: 2m
         labels:
           severity: critical
         annotations:
