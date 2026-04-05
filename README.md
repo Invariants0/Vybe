@@ -1,103 +1,32 @@
 # Vybe URL Shortener
 
-**Production-grade URL shortening service with observability, reliability testing, and production-ready deployment patterns.**
-
-## Status & Technology Stack
-
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge&logo=github)](https://github.com/YOUR_REPO)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=for-the-badge)](LICENSE)
-[![Python 3.13](https://img.shields.io/badge/Python-3.13-3776ab?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Flask 3](https://img.shields.io/badge/Flask-3-black?style=for-the-badge&logo=flask)](https://flask.palletsprojects.com/)
-[![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Redis 7](https://img.shields.io/badge/Redis-7-dc382d?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
-
-[![Next.js 15](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![React 19](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Zustand](https://img.shields.io/badge/Zustand-State-brown?style=for-the-badge)](https://github.com/pmndrs/zustand)
-
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ed?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Docker Compose](https://img.shields.io/badge/Docker%20Compose-Supported-2496ed?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
-[![Nginx](https://img.shields.io/badge/Nginx-Reverse%20Proxy-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
-[![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088ff?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/features/actions)
-
-[![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-e6522c?style=for-the-badge&logo=prometheus&logoColor=white)](https://prometheus.io/)
-[![Grafana](https://img.shields.io/badge/Grafana-Dashboards-f96688?style=for-the-badge&logo=grafana&logoColor=white)](https://grafana.com/)
-[![AlertManager](https://img.shields.io/badge/AlertManager-Alerts-e6522c?style=for-the-badge&logo=prometheus&logoColor=white)](https://prometheus.io/docs/alerting/latest/alertmanager/)
+Production-grade URL shortener built for the Production Engineering Quest. Production-ready with observability, incident response, and reliability testing.
 
 ---
 
-## What is Vybe?
+## Quick Start
 
-Vybe is a complete, production-ready URL shortening service demonstrating enterprise-grade software engineering practices. It's not a minimal example, but a system designed for real-world deployment with robust error handling, comprehensive observability, reliability testing, and clear operational documentation.
+```bash
+git clone https://github.com/YOUR_REPO/vybe.git
+cd vybe
+docker compose up --build
+```
 
-> [!IMPORTANT]
-> This project is production-ready with live incident testing completed on April 5, 2026. All runbook procedures have been verified to work under production conditions.
-
-> [!TIP]
-> Start with the [Quick Start Index](artifacts/documentation/INDEX.md) if you're new to the project. It provides role-based guidance for developers, DevOps engineers, and on-call teams.
-
-### Production Engineering Focus
-
-This project emphasizes:
-- Observable systems (Prometheus + Grafana dashboards)
-- Incident readiness (runbooks for 7 failure scenarios)
-- Reliability testing (database down, CPU spike, memory pressure, Redis failure)
-- Graceful degradation (optional Redis without system impact)
-- Deployment automation (Docker Compose + GitHub Actions)
-- Clear runbooks and troubleshooting guides
-- Capacity planning and scaling boundaries
-
-**Core Value:**
-
-Vybe demonstrates how to build software that doesn't fail silently. Every component exposes metrics, errors are traceable with request IDs, and incident response procedures are documented and tested before going live.
+Visit http://localhost:8080 - that's it!
 
 ---
 
-## Technology Stack
+## What You Get
 
-### Backend
-
-- **Framework:** Flask 3 (lightweight, explicit, right-sized for this problem)
-- **ORM:** Peewee (simple, readable, SQL-compatible)
-- **Database:** PostgreSQL 16 (ACID guarantees, connection pooling, indexes for speed)
-- **App Server:** Gunicorn (production WSGI, worker management, graceful shutdown)
-- **Language:** Python 3.13
-
-### Frontend
-
-- **Framework:** Next.js 15 (React server components, API routes, optimized builds)
-- **UI Library:** React 19 (component model, reactivity)
-- **Language:** TypeScript (type safety for UI layer)
-- **State Management:** Zustand (lightweight, no boilerplate)
-
-### Infrastructure
-
-- **Reverse Proxy:** Nginx (routing, load balancing, SSL termination)
-- **Containerization:** Docker + Docker Compose (reproducible environments)
-- **Orchestration:** Docker Compose (local and small production deployments)
-
-### Observability
-
-- **Metrics:** Prometheus (time-series database, powerful queries)
-- **Visualization:** Grafana (dashboards, alerts, drill-down investigation)
-- **Alerting:** AlertManager (multi-channel notifications, routing, silencing)
-- **Container Metrics:** cAdvisor (Docker container CPU/memory/network)
-- **System Metrics:** node_exporter (host-level CPU/disk/network metrics)
-- **Database Metrics:** postgres_exporter (query counts, connection pools, slow logs)
-- **Cache Metrics:** redis_exporter (hit rates, memory usage, evictions)
-
-### CI/CD
-
-- **Pipeline:** GitHub Actions (runs tests on push, builds Docker images)
+- **Fast Redirects:** 45ms p95 latency at 500 RPS
+- **Resilient:** Handles database down, cache failure, single instance crash
+- **Observable:** Prometheus + Grafana dashboards, structured logging
+- **Tested:** 7 failure scenarios verified, 45% code coverage
+- **Documented:** Full runbooks, architecture guides, incident procedures
 
 ---
 
-## Key Features
-
-- **Short Link Creation:** POST endpoint with optional custom aliases
-- **Redirect Handling:** Fast redirects with automatic click tracking and user agent capture
-- **Link Lifecycle:** Expiry dates and soft deactivation for cleanup without data loss
+## Documentation
 - **Analytics API:** Recent visits with timestamp, referrer, and user agent metadata
 - **Click Tracking:** Sampled event logging (configurable via EVENT_LOG_SAMPLE_RATE) to avoid event table explosion
 - **Connection Pooling:** PostgreSQL connections reused efficiently (20 per app instance)
