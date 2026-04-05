@@ -1,22 +1,11 @@
-import { NextResponse } from 'next/server';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
 
-export async function GET() {
-  // Mock analytics data
-  const mockAnalytics = {
-    totalClicks: 124592,
-    uniqueVisitors: 84201,
-    avgCTR: 24.8,
-    topLocations: [
-      { country: 'US', clicks: 45000 },
-      { country: 'UK', clicks: 23000 },
-      { country: 'DE', clicks: 18000 },
-    ],
-    trafficData: [
-      { date: '2026-03-01', clicks: 4000 },
-      { date: '2026-03-02', clicks: 3000 },
-      { date: '2026-03-03', clicks: 5000 },
-    ],
-  };
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const code = searchParams.get('code');
 
-  return NextResponse.json(mockAnalytics);
+  const endpoint = code ? `${BACKEND_URL}/events/${code}/analytics` : `${BACKEND_URL}/events`;
+  const res = await fetch(endpoint);
+  const data = await res.json();
+  return Response.json(data, { status: res.status });
 }
