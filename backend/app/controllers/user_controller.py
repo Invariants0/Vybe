@@ -18,7 +18,7 @@ class UserController(BaseController):
 
     def create_user(self, request):
         try:
-            err = self.require_json()
+            err = self.require_json(request)
             if err:
                 return err
 
