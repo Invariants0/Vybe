@@ -20,7 +20,7 @@ export function SocialProofMarquee() {
             >
               {brand}
             </span>
-          )),
+          ))
         )}
       </div>
     </div>

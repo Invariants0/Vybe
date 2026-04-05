@@ -4,16 +4,8 @@ import { useLinksStore } from './store';
 import type { CreateLink } from './types';
 
 export function useLinks() {
-  const {
-    links,
-    isLoading,
-    error,
-    setLinks,
-    addLink,
-    deleteLink,
-    setLoading,
-    setError,
-  } = useLinksStore();
+  const { links, isLoading, error, setLinks, addLink, deleteLink, setLoading, setError } =
+    useLinksStore();
 
   useEffect(() => {
     fetchLinks();

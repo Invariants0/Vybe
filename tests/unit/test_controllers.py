@@ -477,7 +477,9 @@ def test_base_controller_handles_conflict_error(app):
     controller = UserController(MagicMock())
 
     with app.app_context():
-        response, status = controller.handle_error(ConflictError("duplicate"), "create_user")
+        response, status = controller.handle_error(
+            ConflictError("duplicate"), "create_user"
+        )
 
     assert status == 409
     assert response.get_json()["error"] == "conflict"
@@ -489,7 +491,9 @@ def test_base_controller_handles_forbidden_error(app):
     controller = UserController(MagicMock())
 
     with app.app_context():
-        response, status = controller.handle_error(ForbiddenError("nope"), "update_user")
+        response, status = controller.handle_error(
+            ForbiddenError("nope"), "update_user"
+        )
 
     assert status == 403
     assert response.get_json()["error"] == "forbidden"
