@@ -21,7 +21,7 @@ class Event(BaseModel):
 
     id = BigAutoField()
     url_id = ForeignKeyField(
-        ShortURL, backref="events", column_name="url_id", index=True
+        ShortURL, backref="events", column_name="url_id", index=True, on_delete="CASCADE"
     )
     user_id = ForeignKeyField(
         User, backref="events", column_name="user_id", null=True, index=True
