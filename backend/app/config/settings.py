@@ -39,6 +39,7 @@ class BaseConfig:
     RATE_LIMIT_STORAGE_URI = os.getenv("RATE_LIMIT_STORAGE_URI", "memory://")
     RATE_LIMIT_DEFAULT = os.getenv("RATE_LIMIT_DEFAULT", "500 per minute")
     RATE_LIMIT_WRITE = os.getenv("RATE_LIMIT_WRITE", "120 per minute")
+    EXPOSE_ERROR_DETAILS = _get_bool("EXPOSE_ERROR_DETAILS")
 
 
 class DevelopmentConfig(BaseConfig):

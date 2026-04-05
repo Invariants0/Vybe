@@ -1,6 +1,6 @@
 import logging
 
-from flask import current_app, jsonify
+from flask import current_app, g, jsonify
 
 try:
     import sentry_sdk
@@ -55,5 +55,13 @@ class BaseController:
                 return jsonify({"error": "not_found", "message": msg}), 404
             return jsonify({"error": "bad_request", "message": msg}), 400
 
-        logging.exception(f"Unexpected error in {operation_name}: {error}")
-        return jsonify({"status": "error", "message": "An internal server error occurred."}), 500
+        current_app.logger.exception("Unexpected error in %s: %s", operation_name, error)
+
+        payload = {"status": "error", "message": "An internal server error occurred."}
+        if current_app.config.get("EXPOSE_ERROR_DETAILS"):
+            payload["error_type"] = error_type
+            payload["error_detail"] = msg
+            payload["operation"] = operation_name
+            payload["request_id"] = getattr(g, "request_id", None)
+
+        return jsonify(payload), 500

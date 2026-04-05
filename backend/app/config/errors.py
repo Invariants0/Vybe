@@ -1,4 +1,6 @@
-from flask import jsonify
+import traceback
+
+from flask import g, jsonify
 from flask_limiter.errors import RateLimitExceeded
 from werkzeug.exceptions import BadRequest
 
@@ -72,4 +74,13 @@ def register_error_handlers(app):
     @app.errorhandler(Exception)
     def _handle_unexpected_error(error):
         app.logger.exception("Unhandled exception: %s", error)
-        return jsonify(status="error", message="An internal server error occurred."), 500
+
+        # Immediate stdout traceback for container debugging sessions.
+        print("🔥 ERROR:", str(error))
+        traceback.print_exc()
+
+        if app.config.get("EXPOSE_ERROR_DETAILS"):
+            return jsonify({"message": str(error)}), 500
+
+        payload = {"status": "error", "message": "An internal server error occurred."}
+        return jsonify(payload), 500
