@@ -102,12 +102,4 @@ jobs:
           DATABASE_PASSWORD: postgres
           REDIS_HOST: localhost
           REDIS_PORT: 6379
-        run: pytest tests/ --cov=backend/app --cov-report=term-missing --cov-report=json
-
-      - name: Coverage comment
-        uses: py-cov-action/python-coverage-comment-action@v3
-        continue-on-error: true
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MINIMUM_GREEN: 70
-          MINIMUM_ORANGE: 60
+        run: pytest tests/ --cov=backend/app --cov-report=term-missing --cov-report=json --cov-fail-under=90

@@ -36,7 +36,6 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:python"
-        continue-on-error: true
 
   analyze-javascript:
     name: Analyze JavaScript/TypeScript
@@ -60,4 +59,3 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:javascript-typescript"
-        continue-on-error: true
