@@ -43,7 +43,7 @@ class ShortURL(BaseModel):
 
 class LinkVisit(BaseModel):
     """
-    Per-redirect visit tracking. Kept for backwards compat with /api/v1/links.
+    Per-redirect visit tracking kept for backwards compat.
     Table: link_visits
     """
 

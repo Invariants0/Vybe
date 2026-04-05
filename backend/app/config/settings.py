@@ -3,7 +3,6 @@ import os
 
 class BaseConfig:
     APP_NAME = os.getenv("APP_NAME", "vybe-shortener")
-    API_PREFIX = os.getenv("API_PREFIX", "/api/v1")
     FLASK_DEBUG = os.getenv("FLASK_DEBUG", "false").lower() == "true"
     SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
 
