@@ -34,5 +34,14 @@ Thumbs.db
 # Judging (not visible to participants)
 judging/
 
+# Nix / direnv
+.direnv/
+
+# Overmind
+.overmind.sock
+
+# Node
+node_modules/
+
 # Others
 .tracks/
