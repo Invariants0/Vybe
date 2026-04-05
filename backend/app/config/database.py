@@ -1,7 +1,21 @@
 from peewee import DatabaseProxy, Model
 from playhouse.pool import PooledPostgresqlDatabase
+from prometheus_client import Gauge
 
 db = DatabaseProxy()
+
+DB_POOL_CONNECTIONS_OPEN = Gauge(
+    "db_pool_connections_open",
+    "Number of database connections tracked by the Peewee pool.",
+)
+DB_POOL_CONNECTIONS_IN_USE = Gauge(
+    "db_pool_connections_in_use",
+    "Number of database connections currently in use.",
+)
+DB_POOL_MAX_CONNECTIONS = Gauge(
+    "db_pool_max_connections",
+    "Configured database connection pool size.",
+)
 
 
 class BaseModel(Model):
@@ -21,11 +35,13 @@ def init_db(app):
         timeout=app.config["DB_CONNECTION_TIMEOUT_SECONDS"],
     )
     db.initialize(database)
+    record_pool_metrics()
 
     @app.before_request
     def _db_connect():
         try:
             db.connect(reuse_if_open=True)
+            record_pool_metrics()
         except Exception as e:
             app.logger.error(f"Failed to connect to database: {e}")
 
@@ -36,6 +52,7 @@ def init_db(app):
                 db.close()
             except Exception:
                 pass
+        record_pool_metrics()
 
 
 def create_tables(safe=True):
@@ -51,3 +68,27 @@ def ping_db():
     if db.is_closed():
         db.connect(reuse_if_open=True)
     db.execute_sql("SELECT 1")
+    record_pool_metrics()
+
+
+def get_pool_snapshot() -> dict[str, int]:
+    database = getattr(db, "obj", None)
+    if database is None:
+        return {"open": 0, "in_use": 0, "max": 0}
+
+    open_connections = len(getattr(database, "_connections", []))
+    in_use_connections = len(getattr(database, "_in_use", {}))
+    max_connections = int(getattr(database, "_max_connections", getattr(database, "max_connections", 0)) or 0)
+    return {
+        "open": open_connections,
+        "in_use": in_use_connections,
+        "max": max_connections,
+    }
+
+
+def record_pool_metrics() -> dict[str, int]:
+    snapshot = get_pool_snapshot()
+    DB_POOL_CONNECTIONS_OPEN.set(snapshot["open"])
+    DB_POOL_CONNECTIONS_IN_USE.set(snapshot["in_use"])
+    DB_POOL_MAX_CONNECTIONS.set(snapshot["max"])
+    return snapshot

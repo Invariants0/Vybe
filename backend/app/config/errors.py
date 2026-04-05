@@ -1,4 +1,5 @@
 from flask import jsonify
+from flask_limiter.errors import RateLimitExceeded
 from werkzeug.exceptions import BadRequest
 
 
@@ -52,6 +53,10 @@ def register_error_handlers(app):
             "message": str(error),
         }
         return jsonify(response), error.status_code
+
+    @app.errorhandler(RateLimitExceeded)
+    def _handle_rate_limit(error):
+        return jsonify(error="rate_limited", message=str(error)), 429
 
     @app.errorhandler(404)
     def _handle_404(_error):
