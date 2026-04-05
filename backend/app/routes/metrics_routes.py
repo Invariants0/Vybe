@@ -12,7 +12,6 @@ from prometheus_client import (
 metrics_bp = Blueprint("metrics", __name__)
 
 
-
 # ── Prometheus metrics ────────────────────────────────────────── ///
 REQUEST_COUNT = Counter(
     "http_requests_total",

@@ -45,7 +45,9 @@ def test_create_url_success(service):
     url_repo.find_by_code.return_value = None
 
     with patch("backend.app.services.url_service.cache_set"):
-        result = svc.create_url(user_id=1, original_url="https://google.com", title="Google")
+        result = svc.create_url(
+            user_id=1, original_url="https://google.com", title="Google"
+        )
 
     assert result == mock_url
     event_repo.log_event.assert_called_once_with(mock_url, "created", user=mock_user)
@@ -62,8 +64,10 @@ def test_resolve_redirect_success_db_path(service):
     mock_url.user_id_id = None
     url_repo.find_by_code.return_value = mock_url
 
-    with patch("backend.app.services.url_service.cache_get", return_value=None), \
-         patch("backend.app.services.url_service.cache_set"):
+    with (
+        patch("backend.app.services.url_service.cache_get", return_value=None),
+        patch("backend.app.services.url_service.cache_set"),
+    ):
         result = svc.resolve_redirect("xyz")
 
     assert result == "https://github.com"
@@ -72,9 +76,13 @@ def test_resolve_redirect_success_db_path(service):
 
 def test_resolve_redirect_success_cache_hit(service):
     svc, url_repo, user_repo, event_repo = service
-    cached_payload = json.dumps({"id": 42, "original_url": "https://cached.com", "user_id": 7})
+    cached_payload = json.dumps(
+        {"id": 42, "original_url": "https://cached.com", "user_id": 7}
+    )
 
-    with patch("backend.app.services.url_service.cache_get", return_value=cached_payload):
+    with patch(
+        "backend.app.services.url_service.cache_get", return_value=cached_payload
+    ):
         result = svc.resolve_redirect("cached_code")
 
     assert result == "https://cached.com"
@@ -124,9 +132,13 @@ def test_resolve_redirect_corrupt_cache_falls_back_to_db(service):
     mock_url.user_id_id = None
     url_repo.find_by_code.return_value = mock_url
 
-    with patch("backend.app.services.url_service.cache_get", return_value="NOT_VALID_JSON"), \
-         patch("backend.app.services.url_service.cache_delete") as mock_del, \
-         patch("backend.app.services.url_service.cache_set"):
+    with (
+        patch(
+            "backend.app.services.url_service.cache_get", return_value="NOT_VALID_JSON"
+        ),
+        patch("backend.app.services.url_service.cache_delete") as mock_del,
+        patch("backend.app.services.url_service.cache_set"),
+    ):
         result = svc.resolve_redirect("bad")
 
     assert result == "https://fallback.com"

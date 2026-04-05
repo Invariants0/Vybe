@@ -5,8 +5,10 @@ import uuid
 from flask import g, has_request_context, jsonify, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+
 try:
     import sentry_sdk
+
     _SENTRY_AVAILABLE = True
 except ImportError:
     sentry_sdk = None  # type: ignore[assignment]
@@ -59,7 +61,7 @@ def _extract_auth_token() -> str | None:
 
 def register_middleware(app):
     import json
-    
+
     class JsonFormatter(logging.Formatter):
         def format(self, record):
             log_record = {
@@ -74,8 +76,10 @@ def register_middleware(app):
             return json.dumps(log_record)
 
     root_logger = logging.getLogger()
-    root_logger.setLevel(getattr(logging, app.config["LOG_LEVEL"].upper(), logging.INFO))
-    
+    root_logger.setLevel(
+        getattr(logging, app.config["LOG_LEVEL"].upper(), logging.INFO)
+    )
+
     if not root_logger.handlers:
         handler = logging.StreamHandler()
         root_logger.addHandler(handler)
@@ -100,15 +104,18 @@ def register_middleware(app):
     def _attach_request_context():
         g.request_id = request.headers.get("X-Request-Id", str(uuid.uuid4()))
         g.request_started_at = time.perf_counter()
-        
+
         # Add request context to Sentry (SDK v2 compatible)
         if _SENTRY_AVAILABLE:
             try:
                 sentry_sdk.set_tag("request_id", g.request_id)
-                sentry_sdk.set_context("request", {
-                    "method": request.method,
-                    "url": request.url,
-                })
+                sentry_sdk.set_context(
+                    "request",
+                    {
+                        "method": request.method,
+                        "url": request.url,
+                    },
+                )
             except Exception:
                 pass
 
@@ -128,24 +135,29 @@ def register_middleware(app):
             g.auth_subject = presented_token
             return None
 
-        app.logger.warning("Unauthorized request rejected for endpoint=%s", request.endpoint or request.path)
-        return jsonify({"error": "unauthorized", "message": "A valid API token is required."}), 401
+        app.logger.warning(
+            "Unauthorized request rejected for endpoint=%s",
+            request.endpoint or request.path,
+        )
+        return jsonify(
+            {"error": "unauthorized", "message": "A valid API token is required."}
+        ), 401
 
     @app.after_request
     def _log_response(response):
         # Only log if request_started_at was set (may not be in some test scenarios)
-        if hasattr(g, 'request_started_at'):
+        if hasattr(g, "request_started_at"):
             duration_ms = round((time.perf_counter() - g.request_started_at) * 1000, 2)
             response.headers["X-Request-Id"] = g.request_id
-            
+
             # Enhanced logging with status code
             log_message = f"{request.method} {request.path} -> {response.status_code} ({duration_ms}ms)"
-            
+
             if response.status_code >= 500:
                 app.logger.error(log_message)
             elif response.status_code >= 400:
                 app.logger.warning(log_message)
             else:
                 app.logger.info(log_message)
-        
+
         return response

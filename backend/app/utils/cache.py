@@ -10,7 +10,7 @@ try:
     import redis
     from redis.backoff import NoBackoff
     from redis.retry import Retry
-except Exception: 
+except Exception:
     redis = None  # type: ignore[assignment]
     NoBackoff = None  # type: ignore[assignment]
     Retry = None  # type: ignore[assignment]
@@ -18,6 +18,7 @@ except Exception:
 _client: Optional["redis.Redis"] = None  # type: ignore[type-arg]
 
 logger = logging.getLogger(__name__)
+
 
 def _sanitize_for_log(value: Any) -> Any:
     if isinstance(value, str):
@@ -93,7 +94,9 @@ def _with_retry(
         try:
             return _execute_with_deadline(callback, config)
         except FuturesTimeoutError:
-            last_error = TimeoutError(f"Redis {operation_name} exceeded operation deadline")
+            last_error = TimeoutError(
+                f"Redis {operation_name} exceeded operation deadline"
+            )
             logger.warning(
                 "Redis %s timed out for key=%s on attempt %s/%s",
                 operation_name,
@@ -116,7 +119,12 @@ def _with_retry(
                 _sleep_for_retry(attempt, config)
 
     if last_error is not None:
-        logger.error("Redis %s exhausted retries for key=%s: %s", operation_name, _sanitize_for_log(key), last_error)
+        logger.error(
+            "Redis %s exhausted retries for key=%s: %s",
+            operation_name,
+            _sanitize_for_log(key),
+            last_error,
+        )
     return None
 
 
@@ -142,7 +150,9 @@ def get_client(config: Optional[dict[str, Any]] = None) -> Optional["redis.Redis
             max_connections=16,
             health_check_interval=5,
             retry_on_timeout=False,
-            retry=Retry(NoBackoff(), 0) if Retry is not None and NoBackoff is not None else None,
+            retry=Retry(NoBackoff(), 0)
+            if Retry is not None and NoBackoff is not None
+            else None,
         )
         client.ping()
         return client
@@ -164,11 +174,15 @@ def cache_get(key: str, config: Optional[dict[str, Any]] = None) -> Optional[str
     return result if isinstance(result, str) or result is None else None
 
 
-def cache_set(key: str, value: str, ttl_seconds: int, config: Optional[dict[str, Any]] = None) -> bool:
+def cache_set(
+    key: str, value: str, ttl_seconds: int, config: Optional[dict[str, Any]] = None
+) -> bool:
     client = get_client(config)
     if not client:
         return False
-    result = _with_retry("SET", key, lambda: client.setex(key, ttl_seconds, value), config)
+    result = _with_retry(
+        "SET", key, lambda: client.setex(key, ttl_seconds, value), config
+    )
     return bool(result)
 
 
@@ -202,7 +216,10 @@ def cache_delete(key: str, config: Optional[dict[str, Any]] = None) -> bool:
             logger.debug("Deleted %d keys matching pattern %s", deleted_count, key)
             return True
         else:
-            return bool(_with_retry("DELETE", key, lambda: client.delete(key), config) is not None)
+            return bool(
+                _with_retry("DELETE", key, lambda: client.delete(key), config)
+                is not None
+            )
     except Exception as e:
         logger.error("Redis DELETE failed for key=%s: %s", _sanitize_for_log(key), e)
         return False

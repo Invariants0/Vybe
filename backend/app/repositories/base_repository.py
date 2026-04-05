@@ -26,7 +26,9 @@ class BaseRepository(Generic[T]):
         except DoesNotExist:
             return None
 
-    def get_all(self, skip: int = 0, limit: int = 100, order_by: Any = None, **filters: Any) -> List[T]:
+    def get_all(
+        self, skip: int = 0, limit: int = 100, order_by: Any = None, **filters: Any
+    ) -> List[T]:
         query = self.model.select()
         if order_by is not None:
             query = query.order_by(order_by)

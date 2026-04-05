@@ -6,7 +6,11 @@ from backend.app.repositories.event_repository import EventRepository
 
 
 class EventService:
-    def __init__(self, config: Optional[Dict[str, Any]] = None, repo: Optional[EventRepository] = None):
+    def __init__(
+        self,
+        config: Optional[Dict[str, Any]] = None,
+        repo: Optional[EventRepository] = None,
+    ):
         self.config = config or {}
         self.repo = repo or EventRepository()
 
@@ -16,7 +20,7 @@ class EventService:
         user_id: Optional[int] = None,
         event_type: Optional[str] = None,
         page: int = 1,
-        per_page: int = 50
+        per_page: int = 50,
     ) -> List[Event]:
         skip = (page - 1) * per_page
         return self.repo.list_filtered(
@@ -24,7 +28,7 @@ class EventService:
             user_id=user_id,
             event_type=event_type,
             skip=skip,
-            limit=per_page
+            limit=per_page,
         )
 
     def create_event(
@@ -32,7 +36,7 @@ class EventService:
         url_id: int,
         event_type: str,
         user_id: Optional[int] = None,
-        details: Optional[Dict] = None
+        details: Optional[Dict] = None,
     ) -> Event:
         if not url_id:
             raise ValueError("url_id is required")
@@ -43,10 +47,13 @@ class EventService:
         if not short_url:
             raise ValueError(f"URL with id {url_id} does not exist")
 
-        details_str = json.dumps(details or {
-            "short_code": short_url.short_code,
-            "original_url": short_url.original_url,
-        })
+        details_str = json.dumps(
+            details
+            or {
+                "short_code": short_url.short_code,
+                "original_url": short_url.original_url,
+            }
+        )
         return self.repo.create(
             url_id=url_id,
             user_id=user_id,
@@ -63,5 +70,5 @@ class EventService:
             "user_id": event.user_id.id if event.user_id else None,
             "event_type": event.event_type,
             "timestamp": event.timestamp.isoformat(),
-            "details": event.get_details()
+            "details": event.get_details(),
         }

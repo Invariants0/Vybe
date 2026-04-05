@@ -72,7 +72,12 @@ def test_redis_failure_returns_safe_defaults_and_service_falls_back():
         user_id_id=3,
         user_id=SimpleNamespace(id=3),
     )
-    service = UrlService(config=failing_config, url_repo=url_repo, user_repo=MagicMock(), event_repo=MagicMock())
+    service = UrlService(
+        config=failing_config,
+        url_repo=url_repo,
+        user_repo=MagicMock(),
+        event_repo=MagicMock(),
+    )
 
     assert cache.cache_get("any-key", failing_config) is None
     assert cache.cache_set("any-key", "value", 1, failing_config) is False

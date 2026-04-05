@@ -26,10 +26,11 @@ class UrlRepository(BaseRepository[ShortURL]):
             .first()
         )
 
-    def get_all(self, skip: int = 0, limit: int = 100, order_by=None, **filters) -> List[ShortURL]:
-        query = (
-            ShortURL.select(ShortURL, User)
-            .join(User, JOIN.LEFT_OUTER, on=(ShortURL.user_id == User.id))
+    def get_all(
+        self, skip: int = 0, limit: int = 100, order_by=None, **filters
+    ) -> List[ShortURL]:
+        query = ShortURL.select(ShortURL, User).join(
+            User, JOIN.LEFT_OUTER, on=(ShortURL.user_id == User.id)
         )
         if order_by is not None:
             query = query.order_by(order_by)
@@ -37,6 +38,9 @@ class UrlRepository(BaseRepository[ShortURL]):
             query = query.where(getattr(ShortURL, key) == value)
         return list(query.offset(skip).limit(limit))
 
-    def list_for_user(self, user_id: int, skip: int = 0, limit: int = 100) -> List[ShortURL]:
-        return self.get_all(skip=skip, limit=limit, order_by=ShortURL.id, user_id=user_id)
-        
+    def list_for_user(
+        self, user_id: int, skip: int = 0, limit: int = 100
+    ) -> List[ShortURL]:
+        return self.get_all(
+            skip=skip, limit=limit, order_by=ShortURL.id, user_id=user_id
+        )

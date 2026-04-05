@@ -78,7 +78,10 @@ def get_pool_snapshot() -> dict[str, int]:
 
     open_connections = len(getattr(database, "_connections", []))
     in_use_connections = len(getattr(database, "_in_use", {}))
-    max_connections = int(getattr(database, "_max_connections", getattr(database, "max_connections", 0)) or 0)
+    max_connections = int(
+        getattr(database, "_max_connections", getattr(database, "max_connections", 0))
+        or 0
+    )
     return {
         "open": open_connections,
         "in_use": in_use_connections,

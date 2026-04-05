@@ -24,7 +24,9 @@ class ShortURL(BaseModel):
     """
 
     id = BigAutoField()
-    user_id = ForeignKeyField(User, backref="urls", column_name="user_id", null=True, index=True)
+    user_id = ForeignKeyField(
+        User, backref="urls", column_name="user_id", null=True, index=True
+    )
     short_code = CharField(unique=True, max_length=32, index=True)
     original_url = TextField()
     title = CharField(null=True, max_length=512)
@@ -41,7 +43,6 @@ class ShortURL(BaseModel):
 
 
 class LinkVisit(BaseModel):
-
     id = BigAutoField()
     short_url = ForeignKeyField(ShortURL, backref="visits", on_delete="CASCADE")
     ip_address = CharField(null=True, max_length=64)

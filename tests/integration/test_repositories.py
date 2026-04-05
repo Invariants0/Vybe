@@ -58,7 +58,9 @@ def test_url_repository_filters_and_paginates(app):
 
         first_page = repo.list_for_user(user.id, skip=0, limit=2)
         second_page = repo.list_for_user(user.id, skip=2, limit=2)
-        active_urls = repo.get_all(skip=0, limit=10, order_by=ShortURL.id, is_active=True)
+        active_urls = repo.get_all(
+            skip=0, limit=10, order_by=ShortURL.id, is_active=True
+        )
         by_code = repo.find_by_code(urls[0].short_code)
 
     assert [url.short_code for url in first_page] == ["code-0", "code-1"]
@@ -72,7 +74,9 @@ def test_url_repository_avoids_n_plus_one_on_user_access(app):
         user, _ = _seed_urls()
         repo = UrlRepository()
 
-        with patch.object(db.obj, "execute_sql", wraps=db.obj.execute_sql) as execute_sql:
+        with patch.object(
+            db.obj, "execute_sql", wraps=db.obj.execute_sql
+        ) as execute_sql:
             urls = repo.list_for_user(user.id, skip=0, limit=5)
             user_ids = [url.user_id.id for url in urls]
 
@@ -85,8 +89,12 @@ def test_user_repository_import_preserves_existing_users(app):
 
     with app.app_context():
         repo = UserRepository()
-        first = repo.get_or_create_for_import(10, "imported", "imported@example.com", created_at)
-        second = repo.get_or_create_for_import(10, "imported-duplicate", "duplicate@example.com", created_at)
+        first = repo.get_or_create_for_import(
+            10, "imported", "imported@example.com", created_at
+        )
+        second = repo.get_or_create_for_import(
+            10, "imported-duplicate", "duplicate@example.com", created_at
+        )
 
     assert first.id == second.id
     assert second.username == "imported"
@@ -97,7 +105,9 @@ def test_event_repository_filtering_pagination_and_logging(app):
         user, urls = _seed_urls()
         repo = EventRepository()
 
-        filtered = repo.list_filtered(url_id=urls[0].id, event_type="created", skip=0, limit=10)
+        filtered = repo.list_filtered(
+            url_id=urls[0].id, event_type="created", skip=0, limit=10
+        )
         paginated = repo.list_for_url(urls[0].id, skip=0, limit=1)
         logged = repo.log_event(urls[0], "accessed", user=user)
 
@@ -112,7 +122,9 @@ def test_event_repository_avoids_n_plus_one_on_related_access(app):
         user, _ = _seed_urls()
         repo = EventRepository()
 
-        with patch.object(db.obj, "execute_sql", wraps=db.obj.execute_sql) as execute_sql:
+        with patch.object(
+            db.obj, "execute_sql", wraps=db.obj.execute_sql
+        ) as execute_sql:
             events = repo.list_filtered(user_id=user.id, skip=0, limit=5)
             payload = [(event.url_id.short_code, event.user_id.id) for event in events]
 

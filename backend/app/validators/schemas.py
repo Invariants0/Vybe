@@ -10,11 +10,15 @@ class CreateUserSchema(BaseModel):
 
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    @field_validator('email')
+    @field_validator("email")
     @classmethod
     def validate_email(cls, v: str) -> str:
-        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', v):   # TODO: Revisit this regex
-            raise ValueError('value is not a valid email address: An email address must have an @-sign.')
+        if not re.match(
+            r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", v
+        ):  # TODO: Revisit this regex
+            raise ValueError(
+                "value is not a valid email address: An email address must have an @-sign."
+            )
         return v
 
 
@@ -24,11 +28,15 @@ class UpdateUserSchema(BaseModel):
 
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    @field_validator('email')
+    @field_validator("email")
     @classmethod
     def validate_email(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', v):
-            raise ValueError('value is not a valid email address: An email address must have an @-sign.')
+        if v is not None and not re.match(
+            r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", v
+        ):
+            raise ValueError(
+                "value is not a valid email address: An email address must have an @-sign."
+            )
         return v
 
 
@@ -39,10 +47,12 @@ class CreateUrlSchema(BaseModel):
 
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    @field_validator('original_url')
+    @field_validator("original_url")
     @classmethod
     def convert_url_to_string(cls, v: HttpUrl) -> str:
-        return str(v).rstrip('/')    # convert HttpUrl to string to avoid trailing slash issues
+        return str(v).rstrip(
+            "/"
+        )  # convert HttpUrl to string to avoid trailing slash issues
 
 
 class UpdateUrlSchema(BaseModel):

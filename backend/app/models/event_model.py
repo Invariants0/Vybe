@@ -20,8 +20,12 @@ class Event(BaseModel):
     """
 
     id = BigAutoField()
-    url_id = ForeignKeyField(ShortURL, backref="events", column_name="url_id", index=True)
-    user_id = ForeignKeyField(User, backref="events", column_name="user_id", null=True, index=True)
+    url_id = ForeignKeyField(
+        ShortURL, backref="events", column_name="url_id", index=True
+    )
+    user_id = ForeignKeyField(
+        User, backref="events", column_name="user_id", null=True, index=True
+    )
     event_type = CharField(max_length=32, index=True)  # "created" | "accessed"
     timestamp = DateTimeField(default=utcnow, index=True)
     details = TextField(null=True)  # stored as JSON string

@@ -33,13 +33,13 @@ def app(postgres_container):
         stale_timeout=300,
         timeout=10,
     )
-    
+
     app = create_app()
     app.config["TESTING"] = True
-    
+
     # Use the testcontainer database pool
     db.initialize(test_db)
-    
+
     with app.app_context():
         test_db.create_tables([User, ShortURL, LinkVisit, Event])
         yield app
@@ -57,6 +57,7 @@ def clean_database(app, request):
     # Ensure strict test isolation by truncating tables before each test execution.
     # Skip for unit tests - use os.path to handle path separators correctly
     import os
+
     fspath = str(request.node.fspath)
     if os.sep + "tests" + os.sep + "unit" + os.sep in fspath:
         yield
@@ -76,7 +77,9 @@ def clean_database(app, request):
 
 @pytest.fixture(scope="function")
 def test_user(client):
-    response = client.post("/users", json={"username": "urltester", "email": "url@vybe.local"})
+    response = client.post(
+        "/users", json={"username": "urltester", "email": "url@vybe.local"}
+    )
     return response.get_json()
 
 

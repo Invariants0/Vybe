@@ -20,7 +20,11 @@ def test_request_id_is_propagated_from_header(client):
 def test_structured_logging_includes_request_id_and_status(app):
     stream = StringIO()
     root_logger = logging.getLogger()
-    template_handler = next(handler for handler in root_logger.handlers if getattr(handler, "formatter", None) is not None)
+    template_handler = next(
+        handler
+        for handler in root_logger.handlers
+        if getattr(handler, "formatter", None) is not None
+    )
     handler = logging.StreamHandler(stream)
     handler.setFormatter(template_handler.formatter)
     for active_filter in template_handler.filters:
@@ -41,9 +45,11 @@ def test_structured_logging_includes_request_id_and_status(app):
 
 
 def test_sentry_request_context_is_attached(app):
-    with app.test_client() as client, patch("backend.app.middleware.sentry_sdk.set_tag") as set_tag, patch(
-        "backend.app.middleware.sentry_sdk.set_context"
-    ) as set_context:
+    with (
+        app.test_client() as client,
+        patch("backend.app.middleware.sentry_sdk.set_tag") as set_tag,
+        patch("backend.app.middleware.sentry_sdk.set_context") as set_context,
+    ):
         client.get("/health", headers={"X-Request-Id": "req-789"})
 
     set_tag.assert_any_call("request_id", "req-789")
@@ -72,7 +78,9 @@ def test_authentication_allows_valid_bearer_token(app):
         return jsonify(ok=True)
 
     with app.test_client() as client:
-        response = client.get("/protected-valid", headers={"Authorization": "Bearer secret-token"})
+        response = client.get(
+            "/protected-valid", headers={"Authorization": "Bearer secret-token"}
+        )
 
     assert response.status_code == 200
     assert response.get_json() == {"ok": True}

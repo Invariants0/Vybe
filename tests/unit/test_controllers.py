@@ -73,9 +73,13 @@ class TestUrlController:
             headers={"Idempotency-Key": "idem-1"},
         )
 
-        with app.app_context(), patch("backend.app.controllers.url_controller.cache_get", return_value=None), patch(
-            "backend.app.controllers.url_controller.cache_set"
-        ) as cache_set:
+        with (
+            app.app_context(),
+            patch(
+                "backend.app.controllers.url_controller.cache_get", return_value=None
+            ),
+            patch("backend.app.controllers.url_controller.cache_set") as cache_set,
+        ):
             response, status = controller.create_url(request)
 
         assert status == 201
@@ -88,7 +92,12 @@ class TestUrlController:
         request = _request(headers={"Idempotency-Key": "idem-2"})
         cached = json.dumps({"id": 9, "short_code": "cached"})
 
-        with app.app_context(), patch("backend.app.controllers.url_controller.cache_get", return_value=cached):
+        with (
+            app.app_context(),
+            patch(
+                "backend.app.controllers.url_controller.cache_get", return_value=cached
+            ),
+        ):
             response, status = controller.create_url(request)
 
         assert status == 201
@@ -109,7 +118,12 @@ class TestUrlController:
         request = _request(args={"user_id": "1", "is_active": "true"})
         cached = json.dumps([{"id": 1}])
 
-        with app.app_context(), patch("backend.app.controllers.url_controller.cache_get", return_value=cached):
+        with (
+            app.app_context(),
+            patch(
+                "backend.app.controllers.url_controller.cache_get", return_value=cached
+            ),
+        ):
             response, status = controller.list_urls(request)
 
         assert status == 200
@@ -120,21 +134,32 @@ class TestUrlController:
         controller = UrlController(MagicMock())
         controller.url_service.list_urls.return_value = [_url()]
 
-        with app.app_context(), patch("backend.app.controllers.url_controller.cache_get", return_value=None), patch(
-            "backend.app.controllers.url_controller.cache_set"
-        ) as cache_set:
+        with (
+            app.app_context(),
+            patch(
+                "backend.app.controllers.url_controller.cache_get", return_value=None
+            ),
+            patch("backend.app.controllers.url_controller.cache_set") as cache_set,
+        ):
             response, status = controller.list_urls(_request(args={"user_id": "1"}))
 
         assert status == 200
         assert response.get_json()[0]["id"] == 1
-        controller.url_service.list_urls.assert_called_once_with(user_id=1, is_active=None)
+        controller.url_service.list_urls.assert_called_once_with(
+            user_id=1, is_active=None
+        )
         cache_set.assert_called_once()
 
     def test_get_url_returns_not_found(self, app):
         controller = UrlController(MagicMock())
         controller.url_service.get_url.return_value = None
 
-        with app.app_context(), patch("backend.app.controllers.url_controller.cache_get", return_value=None):
+        with (
+            app.app_context(),
+            patch(
+                "backend.app.controllers.url_controller.cache_get", return_value=None
+            ),
+        ):
             response, status = controller.get_url(999)
 
         assert status == 404
@@ -144,7 +169,12 @@ class TestUrlController:
         controller = UrlController(MagicMock())
         cached = json.dumps({"id": 4, "short_code": "from-cache"})
 
-        with app.app_context(), patch("backend.app.controllers.url_controller.cache_get", return_value=cached):
+        with (
+            app.app_context(),
+            patch(
+                "backend.app.controllers.url_controller.cache_get", return_value=cached
+            ),
+        ):
             response, status = controller.get_url(4)
 
         assert status == 200
@@ -154,7 +184,12 @@ class TestUrlController:
         controller = UrlController(MagicMock())
         controller.url_service.update_url.return_value = _url(active=False)
 
-        with app.app_context(), patch("backend.app.controllers.url_controller.cache_delete") as cache_delete:
+        with (
+            app.app_context(),
+            patch(
+                "backend.app.controllers.url_controller.cache_delete"
+            ) as cache_delete,
+        ):
             response, status = controller.update_url(1, _request({"is_active": False}))
 
         assert status == 200
@@ -165,7 +200,9 @@ class TestUrlController:
         controller = UrlController(MagicMock())
 
         with app.app_context():
-            response, status = controller.update_url(1, _request({"is_active": "definitely"}))
+            response, status = controller.update_url(
+                1, _request({"is_active": "definitely"})
+            )
 
         assert status == 422
         assert response.get_json()["error"] == "validation_error"
@@ -188,7 +225,9 @@ class TestUserController:
         controller.user_service.create_user.return_value = _user()
 
         with app.app_context():
-            response, status = controller.create_user(_request({"username": "alice", "email": "alice@example.com"}))
+            response, status = controller.create_user(
+                _request({"username": "alice", "email": "alice@example.com"})
+            )
 
         assert status == 201
         assert response.get_json()["username"] == "alice"
@@ -206,7 +245,9 @@ class TestUserController:
         controller = UserController(MagicMock())
 
         with app.app_context():
-            response, status = controller.create_user(_request({"username": "alice", "email": "bad"}))
+            response, status = controller.create_user(
+                _request({"username": "alice", "email": "bad"})
+            )
 
         assert status == 422
         assert response.get_json()["error"] == "validation_error"
@@ -215,8 +256,12 @@ class TestUserController:
         controller = UserController(MagicMock())
         controller.user_service.get_all_users.return_value = [_user()]
 
-        with app.app_context(), patch("backend.app.controllers.user_controller.cache_get", return_value=None), patch(
-            "backend.app.controllers.user_controller.cache_set"
+        with (
+            app.app_context(),
+            patch(
+                "backend.app.controllers.user_controller.cache_get", return_value=None
+            ),
+            patch("backend.app.controllers.user_controller.cache_set"),
         ):
             response, status = controller.list_users(_request(args={}))
 
@@ -228,10 +273,16 @@ class TestUserController:
         controller = UserController(MagicMock())
         controller.user_service.list_users.return_value = [_user(user_id=2)]
 
-        with app.app_context(), patch("backend.app.controllers.user_controller.cache_get", return_value=None), patch(
-            "backend.app.controllers.user_controller.cache_set"
+        with (
+            app.app_context(),
+            patch(
+                "backend.app.controllers.user_controller.cache_get", return_value=None
+            ),
+            patch("backend.app.controllers.user_controller.cache_set"),
         ):
-            response, status = controller.list_users(_request(args={"page": "2", "per_page": "10"}))
+            response, status = controller.list_users(
+                _request(args={"page": "2", "per_page": "10"})
+            )
 
         assert status == 200
         assert response.get_json()[0]["id"] == 2
@@ -241,7 +292,12 @@ class TestUserController:
         controller = UserController(MagicMock())
         controller.user_service.get_user.return_value = None
 
-        with app.app_context(), patch("backend.app.controllers.user_controller.cache_get", return_value=None):
+        with (
+            app.app_context(),
+            patch(
+                "backend.app.controllers.user_controller.cache_get", return_value=None
+            ),
+        ):
             response, status = controller.get_user(999)
 
         assert status == 404
@@ -251,8 +307,15 @@ class TestUserController:
         controller = UserController(MagicMock())
         controller.user_service.update_user.return_value = _user(username="updated")
 
-        with app.app_context(), patch("backend.app.controllers.user_controller.cache_delete") as cache_delete:
-            response, status = controller.update_user(1, _request({"username": "updated"}))
+        with (
+            app.app_context(),
+            patch(
+                "backend.app.controllers.user_controller.cache_delete"
+            ) as cache_delete,
+        ):
+            response, status = controller.update_user(
+                1, _request({"username": "updated"})
+            )
 
         assert status == 200
         assert response.get_json()["username"] == "updated"
@@ -271,10 +334,15 @@ class TestUserController:
     def test_bulk_import_success(self, app):
         controller = UserController(MagicMock())
         controller.user_service.bulk_import_csv.return_value = 2
-        csv_file = FileStorage(stream=io.BytesIO(b"id,username,email\n1,a,a@example.com\n"), filename="users.csv")
+        csv_file = FileStorage(
+            stream=io.BytesIO(b"id,username,email\n1,a,a@example.com\n"),
+            filename="users.csv",
+        )
 
         with app.app_context():
-            response, status = controller.bulk_import(_request(files={"file": csv_file}))
+            response, status = controller.bulk_import(
+                _request(files={"file": csv_file})
+            )
 
         assert status == 201
         assert response.get_json()["count"] == 2
@@ -294,7 +362,13 @@ class TestEventController:
         controller = EventController(MagicMock())
         cached = json.dumps([{"id": 1, "event_type": "created"}])
 
-        with app.app_context(), patch("backend.app.controllers.event_controller.cache_get", return_value=cached):
+        with (
+            app.app_context(),
+            patch(
+                "backend.app.controllers.event_controller.cache_get",
+                return_value=cached,
+            ),
+        ):
             response, status = controller.list_events(_request(args={"url_id": "1"}))
 
         assert status == 200
@@ -308,11 +382,23 @@ class TestEventController:
             "event_type": event.event_type,
         }
 
-        with app.app_context(), patch("backend.app.controllers.event_controller.cache_get", return_value=None), patch(
-            "backend.app.controllers.event_controller.cache_set"
+        with (
+            app.app_context(),
+            patch(
+                "backend.app.controllers.event_controller.cache_get", return_value=None
+            ),
+            patch("backend.app.controllers.event_controller.cache_set"),
         ):
             response, status = controller.list_events(
-                _request(args={"url_id": "1", "user_id": "2", "event_type": "created", "page": "2", "per_page": "10"})
+                _request(
+                    args={
+                        "url_id": "1",
+                        "user_id": "2",
+                        "event_type": "created",
+                        "page": "2",
+                        "per_page": "10",
+                    }
+                )
             )
 
         assert status == 200
@@ -329,11 +415,21 @@ class TestEventController:
         controller = EventController(MagicMock())
         event = _event(event_type="accessed")
         controller.event_service.create_event.return_value = event
-        controller.event_service.serialize_event.return_value = {"id": 1, "event_type": "accessed"}
+        controller.event_service.serialize_event.return_value = {
+            "id": 1,
+            "event_type": "accessed",
+        }
 
         with app.app_context():
             response, status = controller.create_event(
-                _request({"url_id": 1, "user_id": 2, "event_type": "accessed", "details": {"source": "test"}})
+                _request(
+                    {
+                        "url_id": 1,
+                        "user_id": 2,
+                        "event_type": "accessed",
+                        "details": {"source": "test"},
+                    }
+                )
             )
 
         assert status == 201
@@ -365,7 +461,12 @@ def test_base_controller_reports_to_sentry(app):
     controller = UserController(MagicMock())
     app.config["SENTRY_DSN"] = "https://example@sentry.invalid/1"
 
-    with app.app_context(), patch("backend.app.controllers.base_controller.sentry_sdk.capture_exception") as capture_exception:
+    with (
+        app.app_context(),
+        patch(
+            "backend.app.controllers.base_controller.sentry_sdk.capture_exception"
+        ) as capture_exception,
+    ):
         response, status = controller.handle_error(RuntimeError("boom"), "create_user")
 
     assert status == 500

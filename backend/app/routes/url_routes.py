@@ -24,18 +24,22 @@ def get_controller():
 def create_url():
     return get_controller().create_url(request)
 
+
 @urls_bp.get("")
 def list_urls():
     return get_controller().list_urls(request)
+
 
 @urls_bp.get("/<int:url_id>")
 def get_url(url_id):
     return get_controller().get_url(url_id)
 
+
 @urls_bp.put("/<int:url_id>")
 @limiter.limit(lambda: current_app.config.get("RATE_LIMIT_WRITE", "120 per minute"))
 def update_url(url_id):
     return get_controller().update_url(url_id, request)
+
 
 @urls_bp.delete("/<int:url_id>")
 @limiter.limit(lambda: current_app.config.get("RATE_LIMIT_WRITE", "120 per minute"))

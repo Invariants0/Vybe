@@ -1,16 +1,24 @@
 from dotenv import load_dotenv
 from flask import Flask, jsonify
 import os
+
 try:
     import sentry_sdk
     from sentry_sdk.integrations.flask import FlaskIntegration
+
     _SENTRY_AVAILABLE = True
 except ImportError:
     sentry_sdk = None  # type: ignore[assignment]
     FlaskIntegration = None  # type: ignore[assignment]
     _SENTRY_AVAILABLE = False
 
-from backend.app.config import create_tables, get_config, init_db, ping_db, register_error_handlers
+from backend.app.config import (
+    create_tables,
+    get_config,
+    init_db,
+    ping_db,
+    register_error_handlers,
+)
 from backend.app.middleware import register_middleware
 from backend.app.routes import register_routes
 
@@ -38,7 +46,7 @@ def create_app():
     app = Flask(__name__)
     config = get_config()
     app.config.from_object(config)
-    
+
     # Override with environment variables to ensure they're fresh after load_dotenv
     app.config["DATABASE_PORT"] = int(os.getenv("DATABASE_PORT", 5432))
     app.config["DATABASE_HOST"] = os.getenv("DATABASE_HOST", "localhost")
@@ -58,7 +66,9 @@ def create_app():
         try:
             create_tables()
         except Exception as e:
-            app.logger.warning(f"Failed to create tables during startup: {e}. Tables will be created on first request.")
+            app.logger.warning(
+                f"Failed to create tables during startup: {e}. Tables will be created on first request."
+            )
 
     @app.get("/health")
     def health():
