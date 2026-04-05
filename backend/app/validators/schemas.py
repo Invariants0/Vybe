@@ -27,9 +27,7 @@ class CreateUserSchema(BaseModel):
     @field_validator("email")
     @classmethod
     def validate_email(cls, v: str) -> str:
-        if not re.match(
-            r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", v
-        ):
+        if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", v):
             raise ValueError(
                 "value is not a valid email address: An email address must have an @-sign."
             )

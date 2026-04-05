@@ -24,7 +24,6 @@ class BaseController:
             ), 415
         return None
 
-
     def handle_error(self, error, operation_name):
         error_type = type(error).__name__
         msg = str(error)
