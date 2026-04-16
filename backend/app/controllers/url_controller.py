@@ -15,6 +15,10 @@ class UrlController(BaseController):
 
     def create_url(self, request):
         try:
+            err = self.require_json(request)
+            if err:
+                return err
+
             idempotency_key = request.headers.get("Idempotency-Key")
             if idempotency_key:
                 cache_key = f"idempotency:url:{idempotency_key}"
