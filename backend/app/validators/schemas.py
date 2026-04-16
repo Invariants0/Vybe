@@ -10,12 +10,24 @@ class CreateUserSchema(BaseModel):
 
     model_config = ConfigDict(str_strip_whitespace=True)
 
+    @field_validator("username", mode="before")
+    @classmethod
+    def username_must_be_string(cls, v) -> str:
+        if not isinstance(v, str):
+            raise ValueError("username must be a string, not a number or other type")
+        return v
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def email_must_be_string(cls, v) -> str:
+        if not isinstance(v, str):
+            raise ValueError("email must be a string, not a number or other type")
+        return v
+
     @field_validator("email")
     @classmethod
     def validate_email(cls, v: str) -> str:
-        if not re.match(
-            r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", v
-        ):  # TODO: Revisit this regex
+        if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", v):
             raise ValueError(
                 "value is not a valid email address: An email address must have an @-sign."
             )
