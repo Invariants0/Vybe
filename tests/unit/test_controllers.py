@@ -17,11 +17,20 @@ from backend.app.controllers.user_controller import UserController
 from backend.app.validators.schemas import CreateUserSchema
 
 
-def _request(payload=None, *, args=None, headers=None, files=None, bad_json=False):
+def _request(
+    payload=None,
+    *,
+    args=None,
+    headers=None,
+    files=None,
+    bad_json=False,
+    content_type="application/json",
+):
     req = MagicMock()
     req.args = MultiDict(args or {})
     req.headers = headers or {}
     req.files = files or {}
+    req.content_type = content_type
     if bad_json:
         req.get_json.side_effect = BadRequest("malformed json")
     else:
@@ -464,6 +473,18 @@ class TestEventController:
 
         assert status == 400
         assert response.get_json()["error"] == "bad_request"
+
+    def test_create_event_rejects_string_payload(self, app):
+        controller = EventController(MagicMock())
+
+        with app.app_context():
+            response, status = controller.create_event(
+                _request("just a string, not a chest")
+            )
+
+        assert status == 400
+        assert response.get_json()["error"] == "bad_request"
+        controller.event_service.create_event.assert_not_called()
 
 
 def test_base_controller_handles_pydantic_error(app):

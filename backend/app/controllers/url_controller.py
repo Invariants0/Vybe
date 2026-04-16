@@ -15,6 +15,10 @@ class UrlController(BaseController):
 
     def create_url(self, request):
         try:
+            err = self.require_json(request)
+            if err:
+                return err
+
             idempotency_key = request.headers.get("Idempotency-Key")
             if idempotency_key:
                 cache_key = f"idempotency:url:{idempotency_key}"
@@ -23,8 +27,8 @@ class UrlController(BaseController):
                     return self.handle_success(json.loads(cached_resp), 201)
 
             data = request.get_json()
-            if not data:
-                raise ValueError("Payload cannot be empty")
+            if not data or not isinstance(data, dict):
+                raise ValueError("Payload must be a JSON object")
 
             schema = CreateUrlSchema(**data)
             url = self.url_service.create_url(

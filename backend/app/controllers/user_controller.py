@@ -18,9 +18,13 @@ class UserController(BaseController):
 
     def create_user(self, request):
         try:
+            err = self.require_json(request)
+            if err:
+                return err
+
             data = request.get_json()
-            if not data:
-                raise ValueError("Payload cannot be empty")
+            if not data or not isinstance(data, dict):
+                raise ValueError("Payload must be a JSON object")
 
             schema = CreateUserSchema(**data)
             user = self.user_service.create_user(
