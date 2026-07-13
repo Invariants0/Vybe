@@ -25,7 +25,7 @@ jobs:
           python-version: '3.13'
 
       - name: Cache pip dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
@@ -57,7 +57,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Cache node modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: frontend/node_modules
           key: ${{ runner.os }}-bun-${{ hashFiles('frontend/bun.lock') }}
@@ -110,7 +110,7 @@ jobs:
           python-version: '3.13'
 
       - name: Cache pip dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
@@ -153,7 +153,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Cache node modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: frontend/node_modules
           key: ${{ runner.os }}-bun-${{ hashFiles('frontend/bun.lock') }}
