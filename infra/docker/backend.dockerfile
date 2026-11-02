@@ -1,4 +1,4 @@
-FROM python:3.13-slim as builder
+FROM python:3.15-slim as builder
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -17,7 +17,7 @@ RUN pip install --upgrade pip wheel && \
     pip wheel --no-cache-dir --wheel-dir /build/wheels \
     flask flask-limiter gunicorn psycopg2-binary redis prometheus-client pydantic python-dotenv sentry-sdk[flask] peewee email-validator faker pytest pytest-cov testcontainers
 
-FROM python:3.13-slim
+FROM python:3.15-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
